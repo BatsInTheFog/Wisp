@@ -208,8 +208,11 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   (`boards/esp32s3-touch-amoled-18-v1/partitions.csv`): nvs 0x9000 (24 KB), otadata,
   phy_init at the same addresses as before (settings and pairing survive), **ota_0 / ota_1
   6 MB each**, coredump 64 KB at 0xc20000, **assets 3.8 MB** (data/spiffs) at 0xc30000.
-  Built: app 1648 KB in a 6144 KB slot, **73% free**; Gadget checks pass (172). **Not yet
-  flashed**: needs a USB flash (an over-the-air update can't change partitions).
+  Built: app 1648 KB in a 6144 KB slot, **73% free**; Gadget checks pass (172). **USB-flashed
+  2026-11-16** (all four parts hash-verified): online 22 s after boot, **still paired**,
+  name/server/Wi-Fi kept, `diag` `ota.slot_size` 6291456, firmware `58155120ebda806e`,
+  address <home LAN address> on a strong point (-50). Later firmware can go over USB or over
+  the air (the layout stays).
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
   Keep the two in step when updating (plugin and firmware/simulator share the protocol).
 
@@ -322,6 +325,6 @@ Options considered, best first:
 
 ## Single next step
 
-With the user's OK, USB-flash the 16 MB partition table build (fork `7be3631`) to COM3 and
-check the board comes back online still paired, with `diag` showing the 6 MB slot. Then:
-the tailnet (away-from-home), or the RTC / `diag` display-label fixes.
+Choose the next feature, one at a time: the tailnet (away-from-home, user walk-through for
+the `tag:wisp` key and rules), Wisp's face (renderer + art in the `assets` partition), or
+record mode (microSD). Small fixes anytime: RTC on, `diag` display label.
