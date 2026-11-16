@@ -157,6 +157,25 @@ order proposed (awaiting the user): measure `4d16a33` as baseline, then 80 MHz Q
 between full frames, then overlapped sending / second core. Already done: art as RGB565
 from a dedicated partition, copied to PSRAM; lip sync stamped at play time.
 
+**Measured step by step on the board (2026-11-16):**
+
+| Step (fork commit) | Idle fps | Speaking: full + mouth frames/s | Notes |
+| --- | --- | --- | --- |
+| Before (`e1c77f8`) | ~8 | ~8 + 0 | draw 42 ms, send 19 ms |
+| 1. Lip aim + lighter pacing (`4d16a33`) | 13.5 | 11.6 + 0 | draw 37, send 19 |
+| 2. QSPI 80 MHz (in `212c239`) | 14.9 | 13.2 + 0 | send 19 → 13 ms; image check by the user pending |
+| 3. Mouth lane (`212c239`) | 13.6 | 5.2 + 0.8 | full frames while speaking cost too much to leave gaps |
+| Breakdown + text rows only (`e5ab93c`) | 14.9 | 6.1 + 2.9 | text changes had forced whole-band redraws (31 of 66) |
+| Mouth band from the drawings (`44de5b1`) | 14.9 | 6.5 + 4.4 | the band reached the eyes; mouth compose 32 → 17 ms |
+| Faster turned mouth, no flame in the band (`7eee4b8`) | **16.9** | **7.3 + 5.6 = 12.9** | mouth compose 4.9 ms |
+
+Breakdown now (idle / speaking): compose 20.7 / 30.1 ms, copy into the display buffer
+(PSRAM → PSRAM) 7.0 ms, text 0.4-0.5 ms, send 12.7 ms. While speaking, a full frame takes
+~55-80 ms of wall time (audio and Wi-Fi tasks preempt the app task), leaving room for about
+one mouth frame between full frames. Next: step 4, compose on the second core
+(double-buffered) so full frames stop blocking the mouth lane; later, compose straight into
+the display buffer to drop the 7 ms copy.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):
