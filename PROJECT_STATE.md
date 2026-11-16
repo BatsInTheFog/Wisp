@@ -209,7 +209,10 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
       face is on (`clock` setting, off by default), and the RTC chip starts without a valid
       time. To get time: turn on the clock face (Settings → Clock face, or `set clock 60`)
       and set the time zone (`set timezone <POSIX TZ>`, default `UTC0`); optionally
-      `set time_format 12h`. Waiting on the user's time zone and clock preference.
+      `set time_format 12h`. **Done 2026-11-16:** `timezone` = `CST6CDT,M3.2.0,M11.1.0`
+      (Chicago, with daylight saving), `time_format` = `12h`, `clock` = `150` (resting clock
+      after 2.5 min idle). SNTP synced at once (`diag` time valid + synced, UTC 10:29 =
+      4:29 AM Chicago, matching the PC), and the time is written to the RTC.
     - Labels are English-only literals for now ("Conversation", "You", "Swipe left for the
       face"), not in Gadget's translation tables.
   - Reading the console: `console.py`-style script (open COM3 with DTR/RTS low, send
@@ -347,7 +350,7 @@ Options considered, best first:
 
 ## Single next step
 
-Flash fork `9dd40dd` (after an OK) and test on the board: bars hidden on the face screen,
+User test on the board (fork `9dd40dd`, flashed): bars hidden on the face screen,
 any swipe shows them for 5 s; swipe left opens the conversation, swipe down/up scrolls it,
 swipe left (or PWR) returns to the face; the RTC (0x51) keeps time. Then: Wisp's face.
 Later: the tailnet, record mode, the `diag` display label.
