@@ -156,6 +156,13 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     (, maybe as "espressif"), is it paused/blocked, can it get a
     reservation; restart the router/mesh points (many failed and repeated joins may have
     made it throttle the board). On the board side if needed: DHCP debug logging.
+  - Router app (Google Home) lists the board as **idle, not offline**: associated, no
+    traffic. Theory: after today's many hops between mesh points the mesh still maps the
+    board to an old point; the DHCP exchange (or lwIP's ARP check of the offered address,
+    `CONFIG_LWIP_DHCP_DOES_ARP_CHECK=y`) then fails. First test, no flashing: restart the
+    whole mesh and power-cycle the board. If that fails: a build with DHCP debug logs (and
+    possibly the ARP check off). Note: Gadget's NVS sits at the same place as xiaozhi's
+    (0x9000, 24 KB), so old xiaozhi settings (incl. Wi-Fi driver data) are still in it.
   - Memory during these tests is healthy: internal RAM 168 KB free (lowest 135 KB), PSRAM
     5 MB free, recording buffer 1.49 MB, nothing dropped. Playback of 24 kHz speech is well
     within the ESP32-S3's means; the stutter matched the -87 to -91 dBm signal and a 10 s
