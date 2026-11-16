@@ -163,6 +163,12 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     whole mesh and power-cycle the board. If that fails: a build with DHCP debug logs (and
     possibly the ARP check off). Note: Gadget's NVS sits at the same place as xiaozhi's
     (0x9000, 24 KB), so old xiaozhi settings (incl. Wi-Fi driver data) are still in it.
+  - **Mesh restart + board power-cycle fixed it** (2026-11-16): the board came online
+    (user report; it wasn't on USB afterwards, so signal and access point weren't read).
+    So the router side was confused, most likely by today's many reconnects between mesh
+    points. Firmware on the board now: fork `71a00d6` (strongest-point join, weak-point
+    forget, rescan only on a weak point, fresh DHCP discovery, swipe-up reply recall).
+    If it happens again: restart the mesh first.
   - Memory during these tests is healthy: internal RAM 168 KB free (lowest 135 KB), PSRAM
     5 MB free, recording buffer 1.49 MB, nothing dropped. Playback of 24 kHz speech is well
     within the ESP32-S3's means; the stutter matched the -87 to -91 dBm signal and a 10 s
@@ -311,6 +317,6 @@ Options considered, best first:
 
 ## Single next step
 
-Finish the first-boot checklist on the paired board: touch (hold the screen to talk, swipe
-down to cancel), microphone (transcript correct), speaker (replies clear, `set volume 80`),
-PWR key as cancel, and check that touch isn't mirrored.
+Voice test on the online board: does speech still stutter now that it's on a near mesh
+point? Try swipe up to bring back the last reply, and the PWR key as cancel. If stutter
+remains with a good signal: Opus replies (`brew install opus` on the Mac).
