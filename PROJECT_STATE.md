@@ -77,7 +77,12 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 - Hermes Gadget simulator builds on this PC (core tests pass: 3/3) and completes a headless
   smoke test against the local demo server on `sim-368x448` (2026-11-16): pairs, sends text,
   gets the echo reply.
-- Not yet tried: the simulator against the real Hermes on the Mac; live microphone/speaker.
+- **Simulator talks to the real Hermes on the Mac** (2026-11-16): `ws://<home LAN address>:8765/gadget`,
+  device "Wisp sim" paired. Typed messages, voice (PC mic → Mac speech-to-text) and spoken
+  replies (Mac text-to-speech → PC speakers) all work.
+  - To talk: **click and hold on the simulated screen**. Holding Space didn't seem to work in
+    our test, probably because keyboard focus was in the text box.
+  - Simulator identity and saved replies: `$env:USERPROFILE\.hermes-gadget\sim\wisp-sim\`.
 
 ## Known problems / open questions
 
@@ -85,7 +90,9 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   (different display and touch chips). See [docs/V1_PORT.md](docs/V1_PORT.md).
 - Gadget's built-in face is 1-bit; Wisp's colour face needs its own renderer.
 - No C++ compiler or ESP toolchain on this PC yet.
-- Unknown: does the Mac's firewall allow port 8765? Is the gadget plugin installed in Hermes?
+- Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
+  Keep the two in step when updating (plugin and firmware/simulator share the protocol).
+- The Mac's address (<home LAN address>) could change; a DHCP reservation on the router would pin it.
 
 ## Decisions
 
@@ -95,6 +102,7 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 
 ## Single next step
 
-On the Mac: install the gadget plugin into Hermes and run `hermes gateway setup`, then note
-the device URL from `hermes gadget info`. Then run the simulator on this PC against that URL
-and approve the pairing on the Mac.
+Fork Hermes Gadget on GitHub and add a **V1 board profile** (SH8601 display + FT3168 touch,
+values in [docs/V1_PORT.md](docs/V1_PORT.md)), then build it with no flashing. Before the
+first flash: install the ESP toolchain, take a full flash backup of the factory firmware, and
+ask.
