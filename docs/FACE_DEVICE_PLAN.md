@@ -82,6 +82,17 @@ and one more line near the bottom. The simulator loads the file from the `HG_WIS
 environment variable on `sim-368x448`; a side-by-side check with the browser preview
 matched. 7 new core tests (663 pass). The board doesn't load the file yet (step 5).
 
+**Step 3 done (2026-11-16, fork `2592253`):** `WispFaceRenderer` is now the animator, a C++
+port of the preview's `frame()`: the 13 states from the spec (eyes, mouth or lip sync, gaze
+mode, flame, props, dots, flare), wandering gaze with saccades and lag, blinks (shut eyes
+don't blink; a wink blinks one eye), mouth ladders with hysteresis and tilt
+(`add_part_rotated`), the flame trailing head turns and squashing when she looks up, props
+fading in and out (quill writing, level-driven mic), thinking dots. The app steps it at
+~30 fps while the face is on screen and redraws only the face. Console `face <state>`
+forces a state for testing (`face auto` to return). Checked: all 13 states rendered in the
+simulator (contact sheet), the idle face moves between frames, 7 new tests (670 pass).
+Open for step 4: the listening mic sits at the bottom (micY 440) where the two text lines go.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):

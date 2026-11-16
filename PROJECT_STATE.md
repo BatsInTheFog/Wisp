@@ -356,9 +356,13 @@ recorded there). **Step 1 done:** `tools/pack_face.py` builds `build/wisp_face.b
 `tools/test_pack_face.py`, 5 pass). **Step 2 done:** the fork's core reads the file and
 draws Wisp's still idle face in the simulator, matching the browser preview (details in
 the plan; fork `8b79f5d`; board firmware builds, 1662 KB). To see it: `$env:HG_WISP_FACE = "$env:USERPROFILE\Documents\GitHub\Wisp\build\wisp_face.bin"`
-before `hermes-gadget sim --board sim-368x448 ...`. **Next: step 3**, port the preview's
-animation (gaze, blinks, mouth ladder, props, dots) and run it at its own faster frame
-rate. Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
+before `hermes-gadget sim --board sim-368x448 ...`. **Step 3 done:** the face animates like
+the preview (all 13 states; fork `2592253`; 670 core tests pass; board firmware builds,
+1675 KB). Try a state with the console: `face thinking`, `face auto`. **Next: step 4**,
+connect the states to what Wisp is doing (listening with the real mic level, thinking,
+research, speaking with lip sync from the played audio, success, sad, asleep), Wisp asleep
+with the time as the resting clock, and the two text lines near the bottom (mind the mic).
+Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
 Waveshare's V1 schematic), the `diag` label.
 
 Device settings made 2026-11-16 (in the board's flash, not in code): `screen_timeout` 210 s
