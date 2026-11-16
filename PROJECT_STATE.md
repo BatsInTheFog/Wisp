@@ -353,11 +353,18 @@ Options considered, best first:
 Face work ([docs/FACE_DEVICE_PLAN.md](docs/FACE_DEVICE_PLAN.md); the user's four choices are
 recorded there). **Step 1 done:** `tools/pack_face.py` builds `build/wisp_face.bin` (2.24 MB,
 133 parts, pixel-exact; format in [docs/FACE_FORMAT.md](docs/FACE_FORMAT.md); tests in
-`tools/test_pack_face.py`, 5 pass). **Next: step 2**, a `FaceRenderer` in the fork's core
-that reads this file and draws the still idle face in the simulator (`sim-368x448`,
-full 448 rows), compared with the browser preview. Later: the tailnet, record mode, the
-microSD slot (V1 pins still to confirm from Waveshare's V1 schematic), the `diag` label.
+`tools/test_pack_face.py`, 5 pass). **Step 2 done:** the fork's core reads the file and
+draws Wisp's still idle face in the simulator, matching the browser preview (details in
+the plan; fork `8b79f5d`; board firmware builds, 1662 KB). To see it: `$env:HG_WISP_FACE = "$env:USERPROFILE\Documents\GitHub\Wisp\build\wisp_face.bin"`
+before `hermes-gadget sim --board sim-368x448 ...`. **Next: step 3**, port the preview's
+animation (gaze, blinks, mouth ladder, props, dots) and run it at its own faster frame
+rate. Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
+Waveshare's V1 schematic), the `diag` label.
 
 Device settings made 2026-11-16 (in the board's flash, not in code): `screen_timeout` 210 s
 (dims at ~105 s, dark 60 s after the resting clock appears at 150 s), `clock` 150,
 `time_format` 12h, `timezone` Chicago, `volume` 80, `name` Wisp.
+
+Build gotcha: after adding a new source file to the fork's core, delete
+`firmware\esp32\.pio\build\esp32s3-touch-amoled-18-v1\CMakeCache.txt` before `pio run`, or
+PlatformIO keeps its old file list and the link fails with "undefined reference".

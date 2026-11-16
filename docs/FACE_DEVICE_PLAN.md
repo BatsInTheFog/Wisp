@@ -72,6 +72,16 @@ Getting it onto the board: a one-line USB write to the `assets` area (address 0x
 separate from the firmware, so art changes don't need a firmware rebuild. Later, Hermes
 could send face updates over the air.
 
+**Step 2 done (2026-11-16, fork `wisp` branch):** `hg::WispFace` reads the file in place
+(checks magic, version, size, CRC; parts by name; manifest + spec as JSON), `hg::add_part`
+draws a part additively (nearest-pixel scale, alpha, per-row shift, saturating, row clip),
+and `hg::WispFaceRenderer::draw_idle(t)` draws the resting face (swaying, breathing,
+pulsing flame; neutral eyes; closed mouth) exactly where the preview puts it. On the idle
+screen the UI shows it over the whole panel (also behind hidden bars) with "Hi, I'm Wisp"
+and one more line near the bottom. The simulator loads the file from the `HG_WISP_FACE`
+environment variable on `sim-368x448`; a side-by-side check with the browser preview
+matched. 7 new core tests (663 pass). The board doesn't load the file yet (step 5).
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):
