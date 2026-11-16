@@ -189,7 +189,22 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     phone may drop off the setup network meanwhile (rejoin and reload to see the result).
     Needs a 2.4 GHz network.
   - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
-  - Later: turn on the RTC (`b.rtc.enabled`, as the 2.06) and maybe the IMU.
+  - **Touch UI for Wisp** (fork `9dd40dd`, 2026-11-16), two new `DeviceProfile` options, on
+    for the V1 board and the `sim-368x448` simulator profile, off for every other board:
+    - `autohide_bars`: on Ready / Listening / Thinking / Responding while online, the top
+      bar ("Wisp" + network) and the hint bar stay dark; any swipe shows them for 5 s
+      (`kBarsShowMs`). Settings, setup, pairing, offline/connecting screens and hint
+      messages (e.g. "Paired with Hermes") keep them.
+    - `chat_view`: the board keeps the conversation (speech transcripts, typed messages,
+      final replies; newest 40 lines; a new session clears it). Swipe left on the face
+      opens "Conversation" at the newest line; swipe down scrolls back, up forward; swipe
+      left again or PWR returns to the face. Holding the screen still talks from it.
+    - RTC turned on (`b.rtc.enabled`, PCF85063 at 0x51). IMU still unused.
+    - Checks: 656 core tests pass (5 new), Gadget firmware/docs/sim tests pass
+      (`test_sim_window` once errored on a window-timing hiccup, then passed 7/7), simulator
+      screenshots show each state. Built (app 1650 KB, 73% free). **Not yet flashed.**
+    - Labels are English-only literals for now ("Conversation", "You", "Swipe left for the
+      face"), not in Gadget's translation tables.
   - Reading the console: `console.py`-style script (open COM3 with DTR/RTS low, send
     `status` / `diag`); resetting via RTS and reading the boot log returned nothing.
   - The UI is 368x432 on the 368x448 glass on purpose (as Gadget's V2 profile): the panel
@@ -325,6 +340,7 @@ Options considered, best first:
 
 ## Single next step
 
-Choose the next feature, one at a time: the tailnet (away-from-home, user walk-through for
-the `tag:wisp` key and rules), Wisp's face (renderer + art in the `assets` partition), or
-record mode (microSD). Small fixes anytime: RTC on, `diag` display label.
+Flash fork `9dd40dd` (after an OK) and test on the board: bars hidden on the face screen,
+any swipe shows them for 5 s; swipe left opens the conversation, swipe down/up scrolls it,
+swipe left (or PWR) returns to the face; the RTC (0x51) keeps time. Then: Wisp's face.
+Later: the tailnet, record mode, the `diag` display label.
