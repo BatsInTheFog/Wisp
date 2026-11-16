@@ -140,9 +140,18 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     there either, and the new rule then dropped it every 20 s, so it looped. **The router's
     slow address hand-out is a separate issue from signal.** Fix `1bf49c0`: only abandon
     when the access point is weak (below -75); on a good signal keep waiting as stock
-    Gadget does. Built, **not yet flashed** (needs OK). Still open: why this router takes
-    so long to give the board an address (to investigate on the router / with a DHCP
-    reservation for the board's,).
+    Gadget does. **Flashed and confirmed** (board's `elf_sha256` `c252ab487cf01cdc` matches
+    the local build; the `build.time` in `diag` is the app-descriptor compile time and can
+    look stale). Board stays on the strong node (channel 11, -49 to -62) but got **no
+    address for 4+ minutes**.
+  - **Likely cause of the missing address:** Gadget's base config sets
+    `CONFIG_LWIP_DHCP_RESTORE_LAST_IP=y`, so DHCP asks straight for the last address saved
+    in flash instead of a fresh discovery; a router that doesn't expect that address can
+    ignore the request, and the client then sits in long retries. Fix: turn it off in the
+    V1 board's `sdkconfig.defaults` (fork). Being built (full rebuild, since the generated
+    `sdkconfig.esp32s3-touch-amoled-18-v1` had to be deleted); needs an OK to flash.
+    Fallback if it still fails: a DHCP reservation on the router for the board's MAC
+    <board MAC>.
   - Memory during these tests is healthy: internal RAM 168 KB free (lowest 135 KB), PSRAM
     5 MB free, recording buffer 1.49 MB, nothing dropped. Playback of 24 kHz speech is well
     within the ESP32-S3's means; the stutter matched the -87 to -91 dBm signal and a 10 s
