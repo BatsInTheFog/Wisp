@@ -114,8 +114,15 @@ the app; the V1 UI uses all 448 rows (fork `b410574`). `wisp_face.bin` was writt
 (CRC check ~0.6 s), then `abort()` in the USB console's start-up: a lock allocation failed
 because internal RAM was used up by the parsed manifest/spec JSON (thousands of small
 allocations, which ESP-IDF keeps in internal RAM). Fix (fork, committed): free the parsed
-JSON once the renderer has copied its numbers (`WispFace::drop_metadata`). Built; needs an
-OK to flash. Still to measure afterwards: frame rate and memory with the face running.
+JSON once the renderer has copied its numbers (`WispFace::drop_metadata`, fork `86a6af9`).
+**Flashed: the board stays up, online and paired, showing the face.** But internal RAM
+dipped to 496 bytes at start-up (now 119 KB free, was 168 KB), and frame timing (`perf`)
+showed ~118 ms a frame (~8 fps: render ~92 ms, flush ~27 ms), with the app task so busy the
+console took 15 s to answer. Fixes (fork `afb00cb`, built, 675 tests pass, simulator shows no
+leftover pixels): fixed-point column stepping (no per-pixel division); clear and redraw only
+the rows the face changed; pace the face (at most every 33 ms, 100 ms on the clock, and a
+slow frame waits as long again); small allocations to PSRAM while the metadata is parsed.
+**Needs an OK to flash**, then measure again.
 
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
