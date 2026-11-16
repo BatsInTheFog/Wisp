@@ -122,7 +122,11 @@ console took 15 s to answer. Fixes (fork `afb00cb`, built, 675 tests pass, simul
 leftover pixels): fixed-point column stepping (no per-pixel division); clear and redraw only
 the rows the face changed; pace the face (at most every 33 ms, 100 ms on the clock, and a
 slow frame waits as long again); small allocations to PSRAM while the metadata is parsed.
-**Needs an OK to flash**, then measure again.
+Flashed `afb00cb`: no restarts; lowest internal RAM 88 KB (was 496 bytes); frame ~75 ms
+(render ~56 ms, flush ~19 ms), so with pacing ~6-7 fps. The user is fine with a lower frame
+rate. The board's console didn't know `face` (the port registers commands by name).
+Next build (fork `e2ae49b`, 675 tests pass): art copied to PSRAM at start-up (the flash reads
+in DIO), a faster `Canvas::blit`, `face` registered on the console. **Needs an OK to flash.**
 
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
