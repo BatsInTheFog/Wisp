@@ -135,7 +135,18 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     (channel 6, -78) and got stuck associated with **no address** for 2+ minutes, because
     the "forget weak" step only runs once an address arrives. **Follow-up fix `f5444e1`**:
     when a retry finds the board associated but without an address, forget the remembered
-    node and disconnect so it rejoins by scanning. Built, **not yet flashed** (needs OK).
+    node and disconnect so it rejoins by scanning. Flashed: it left the weak node and
+    joined the **strong one (channel 11, -55 dBm)**, but still got no address within ~20 s
+    there either, and the new rule then dropped it every 20 s, so it looped. **The router's
+    slow address hand-out is a separate issue from signal.** Fix `1bf49c0`: only abandon
+    when the access point is weak (below -75); on a good signal keep waiting as stock
+    Gadget does. Built, **not yet flashed** (needs OK). Still open: why this router takes
+    so long to give the board an address (to investigate on the router / with a DHCP
+    reservation for the board's,).
+  - Memory during these tests is healthy: internal RAM 168 KB free (lowest 135 KB), PSRAM
+    5 MB free, recording buffer 1.49 MB, nothing dropped. Playback of 24 kHz speech is well
+    within the ESP32-S3's means; the stutter matched the -87 to -91 dBm signal and a 10 s
+    stalled send, not memory.
   - **Reading replies again:** Gadget keeps a finished reply on screen for 20 s, then the
     mascot returns; only boards with Up/Down keys could bring it back. **Fork `980f396`
     adds swipe up** on the touchscreen: the first swipe brings the last reply back, further
