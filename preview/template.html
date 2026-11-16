@@ -170,7 +170,7 @@ const BLINK = { half: 9, closed: 14 };
 // state -> look. gaze: wander | listen | think | research | still. flame: size, brightness, speed
 const STATES = {
   idle:      { label: "Idle",       eyes: 0,  mouth: 0, gaze: "wander",   blink: true,  flame: [1.00, 1.00, 1.0] },
-  listening: { label: "Listening",  eyes: 5,  mouth: 3, gaze: "listen",   blink: true,  flame: [1.05, 1.15, 1.2], prop: "quill" },
+  listening: { label: "Listening",  eyes: 5,  mouth: 3, gaze: "listen",   blink: true,  flame: [1.05, 1.15, 1.2], prop: "mic" },
   thinking:  { label: "Thinking",   eyes: 8,  mouth: 11, gaze: "think",    blink: true,  flame: [1.00, 1.05, 1.9], dots: true },
   research:  { label: "Researching",eyes: 7,  mouth: 0, gaze: "research", blink: true,  flame: [1.02, 1.10, 2.2] , prop: "browser" },
   notes:     { label: "Taking notes", eyes: 0, mouth: 9, gaze: "notes",  blink: true,  flame: [1.00, 1.05, 1.1], prop: "quill" },
@@ -207,6 +207,9 @@ const TUNE_DEFS = [
   ["propX",     "Browser / quill across", 200, 340, 1, 290, "px"],
   ["propY",     "Browser / quill down", 300, 430, 1, 345, "px"],
   ["propFps",   "Browser / quill speed", 1, 12, 0.5, 5, "fps"],
+  ["micSize",   "Mic size",            0.6, 1.8, 0.01, 0.8, "×"],
+  ["micY",      "Mic height (base)",   380, 448, 1, 440, "px"],
+  ["micLoud",   "Simulated voice loudness", 0.2, 1, 0.01, 0.85, ""],
   ["squash",    "Flame squash looking up", 0, 0.6, 0.01, 0.28, ""],
   ["turnMouths","Turned mouths on (1) / off (0)", 0, 1, 1, 1, ""],
   ["turn1",     "Glance that switches to the first turned mouth", 0.05, 0.9, 0.01, 0.28, ""],
@@ -252,6 +255,20 @@ let talk = { amp: 0, sylEnd: 0, peak: 0, pauseUntil: 0 };
 const fl = { size: 1, bright: 1, speed: 1 };
 let t = 0, last = performance.now();
 const prop = { name: null, alpha: 0 };
+// Mic input level, 0..1. On the device this comes from the microphone (RMS of each audio chunk).
+// Here it is simulated as speech: syllable bursts with short pauses. Rises fast, falls slower, like a level meter.
+const mic = { level: 0, raw: 0, sylEnd: 0, peak: 0, pauseUntil: 0 };
+function updateMic(dt) {
+  if (STATES[stateKey].prop !== "mic") { mic.level = approach(mic.level, 0, dt, 0.2); return; }
+  if (t > mic.sylEnd) {
+    if (t < mic.pauseUntil) mic.peak = rand(0, 0.08);                       // breath between phrases
+    else if (Math.random() < 0.15) { mic.pauseUntil = t + rand(0.4, 1.2); mic.peak = 0.03; }
+    else mic.peak = tune.micLoud * rand(0.35, 1);
+    mic.sylEnd = t + rand(0.08, 0.2);
+  }
+  mic.raw = approach(mic.raw, mic.peak + rand(-0.05, 0.05), dt, 0.03);
+  mic.level = mic.raw > mic.level ? approach(mic.level, mic.raw, dt, 0.035) : approach(mic.level, mic.raw, dt, 0.16);
+}
 // "Look in every direction": center, then 8 compass points, half a second each
 const TOUR = [[0,0],[0,-1],[0.7,-0.7],[1,0],[0.7,0.7],[0,1],[-0.7,0.7],[-1,0],[-0.7,-0.7],[0,0]];
 const tour = { i: -1, next: 0 };
@@ -383,7 +400,11 @@ function drawProp(dt) {
   prop.alpha = approach(prop.alpha, want && want === prop.name ? 1 : 0, dt, 0.12);
   if (!prop.name || prop.alpha < 0.01) return;
   const fr = MANIFEST.props[prop.name], n = fr.length;
-  const p = (t * tune.propFps) % n, i0 = Math.floor(p), i1 = (i0 + 1) % n, f = p - i0;
+  let p = (t * tune.propFps) % n, i0 = Math.floor(p), i1 = (i0 + 1) % n, f = p - i0;
+  if (prop.name === "mic") {
+    // frames are levels, not time: 0 = silence, 4 = loud. Blend the two nearest levels.
+    p = clamp(mic.level, 0, 1) * (n - 1); i0 = Math.floor(p); i1 = Math.min(n - 1, i0 + 1); f = p - i0;
+  }
   const pop = 0.85 + 0.15 * prop.alpha;
   let x = tune.propX + Math.sin(t * 1.3) * 2, y = tune.propY + Math.sin(t * 1.9 + 0.7) * 3, size = tune.propSize;
   if (prop.name === "quill") {
@@ -393,6 +414,8 @@ function drawProp(dt) {
     else { const k = (ph - 0.82) / 0.18, e = k * k * (3 - 2 * k); x = left + travel * (1 - e); y = tune.propY + 22 - 9 * Math.sin(k * Math.PI); }
     size = tune.quillSize;
   }
+  // mic sits centred under her mouth, base near the bottom edge, so its arcs never hit the screen edge
+  if (prop.name === "mic") { x = 184; y = tune.micY; size = tune.micSize * (1 + 0.04 * mic.level); }
   ctx.globalCompositeOperation = "lighter";
   ctx.globalAlpha = prop.alpha * (1 - f); drawPart(fr[i0], x, y, size * pop);
   ctx.globalAlpha = prop.alpha * f;       drawPart(fr[i1], x, y, size * pop);
@@ -417,6 +440,7 @@ function frame(now) {
   if (!canBlink() && blinkT < 0) nextBlink = t + tune.blinkEvery;
   if (tour.i >= 0 && t > tour.next) stepTour();
   updateTalk();
+  updateMic(dt);
   // micro drift keeps her from freezing
   const drift = { x: 0.05 * Math.sin(t * 0.7) + 0.03 * Math.sin(t * 1.9), y: 0.04 * Math.sin(t * 0.9 + 1) };
   gaze.x = approach(gaze.x, target.x + drift.x, dt, tune.saccade);
@@ -557,7 +581,8 @@ function writeSpec() {
     name: "familiar-face", version: 1, screen: MANIFEST.screen,
     layout: MANIFEST.layout, blink: { halfEyes: BLINK.half, closedEyes: BLINK.closed, timingMs: [45, 70, 45] },
     flameStyle: flameMode, tuning: Object.fromEntries(TUNE_DEFS.map(d => [d[0], +tune[d[0]]])),
-    props: { browserSize: tune.propSize, quillSize: tune.quillSize, quillStroke: tune.quillTravel, x: tune.propX, y: tune.propY, fps: tune.propFps },
+    props: { browserSize: tune.propSize, quillSize: tune.quillSize, quillStroke: tune.quillTravel, x: tune.propX, y: tune.propY, fps: tune.propFps,
+      mic: { size: tune.micSize, x: 184, baseY: tune.micY, frames: "5 levels, quiet to loud", driver: "mic input level 0-1 (RMS), fast rise ~35 ms, slower fall ~160 ms", blendBetweenLevels: true } },
     turnedMouths: { on: !!tune.turnMouths, firstStepAt: tune.turn1, fullStepAt: tune.turn2, twoStepSwitchAt: (tune.turn1 + tune.turn2) / 2, hysteresis: 0.05, fade: false, squeeze: tune.mouthFore, tiltDeg: tune.mouthRot, parallaxOnly: [...NO_TURN], sidesSwapped: [...SWAP], firstTurnSwapped: [...SWAP_FIRST] },
     parallax: { eyes: 1, mouth: tune.mouthDepth, flame: 0.32, flameTrail: 1.4, flameSquashUp: tune.squash },
     face: { eyeCenterY: tune.eyeLine, scale: tune.faceSize, flameScale: tune.flameSize, liftLookingUp: tune.upLift, followGazeY: tune.follow, tilt: tune.pitch },

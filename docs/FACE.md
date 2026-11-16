@@ -29,5 +29,6 @@ Needs Python 3 with numpy, scipy and Pillow.
 - **Mouths:** 13 shapes. Each has a "ladder" per side: forward, then one or two turned drawings. The mouth squeezes and tilts as Wisp turns, then snaps to the next drawing at set glance points (no cross-fade). Wide uses parallax only. Smirk and Soft smile have their left and right turns swapped; Small has only its first turn swapped.
 - **Flame:** one drawing warped row by row so the tip sways and the base stays put. It trails behind head turns and squashes when Wisp looks up.
 - **Gaze:** eyes move most, mouth less, flame least. The whole face follows up and down, and looking up lifts the face further.
-- **Props:** the browser window (researching) and quill (listening, taking notes) float in the lower right. The quill writes left to right.
-- **States:** idle, listening, thinking, researching, taking notes, speaking (lip sync), success, sad, annoyed, asleep, hearts, excited, wink. Their eyes, mouth, gaze style and flame settings are listed in `animation_spec.json`.
+- **Props:** the browser window (researching) and quill (taking notes) float in the lower right; the quill writes left to right.
+- **Mic (listening):** sits centred under her mouth. Its 5 frames are input levels, quiet to loud, not an animation loop. The device picks the frame from the mic level (0-1, RMS of each audio chunk), rising fast (~35 ms) and falling slower (~160 ms), blending between neighbouring frames.
+- **States:** idle, listening (mic), thinking, researching, taking notes, speaking (lip sync), success, sad, annoyed, asleep, hearts, excited, wink. Their eyes, mouth, gaze style and flame settings are listed in `animation_spec.json`.

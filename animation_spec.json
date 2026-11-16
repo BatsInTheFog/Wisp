@@ -64,7 +64,9 @@
     "mouthFore": 0.19,
     "mouthRot": 7,
     "mouthScale": 1.1,
-    "mouthDepth": 0.71
+    "mouthDepth": 0.71,
+    "micSize": 0.8,
+    "micY": 440
   },
   "props": {
     "browserSize": 1.16,
@@ -72,7 +74,15 @@
     "quillStroke": 64,
     "x": 290,
     "y": 345,
-    "fps": 5
+    "fps": 5,
+    "mic": {
+      "size": 0.8,
+      "x": 184,
+      "baseY": 440,
+      "frames": "5 levels, quiet to loud",
+      "driver": "mic input level 0-1 (RMS), fast rise ~35 ms, slower fall ~160 ms",
+      "blendBetweenLevels": true
+    }
   },
   "turnedMouths": {
     "on": true,
@@ -133,7 +143,7 @@
         "brightness": 1.15,
         "speed": 1.2
       },
-      "prop": "quill"
+      "prop": "mic"
     },
     "thinking": {
       "eyes": 8,

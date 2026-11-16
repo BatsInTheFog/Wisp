@@ -23,7 +23,8 @@ F = {
     "flames": "1000049699.png",
     "eyes": "1000049701.png",
     "browser": "props_browser.png",
-    "quill": "props_quill.png",    # 4 rows x 6 pairs
+    "quill": "props_quill.png",
+    "mic": "props_mic.png",        # 5 frames, quiet to loud: picked by mic input level, not time
 }
 
 def load(name):
@@ -228,9 +229,34 @@ def prop_frames(fname, key, target_w):
         out.append(info)
     return out
 
+def level_frames(fname, key, target_h):
+    """Frames that represent levels (mic input), anchored at the base so the stand never moves."""
+    img = load(fname)
+    raw = mask(img, 40)
+    # the sound arcs nearly touch the next frame, so split the sheet into 5 equal slots
+    w = raw.shape[1]
+    boxes = []
+    for i in range(5):
+        a, b = round(i * w / 5), round((i + 1) * w / 5)
+        xs = np.where(raw[:, a:b].any(axis=0))[0] + a
+        # drop a neighbour's arc tip: a narrow run of columns that touches the slot's edge
+        groups = np.split(xs, np.where(np.diff(xs) > 6)[0] + 1)
+        keep = [g for g in groups if not ((g.min() <= a + 1 or g.max() >= b - 2) and len(g) < 40)]
+        xs = np.concatenate(keep)
+        rows = np.where(raw[:, xs.min():xs.max() + 1].any(axis=1))[0]
+        boxes.append(dict(x0=int(xs.min()), x1=int(xs.max()) + 1, y0=int(rows.min()), y1=int(rows.max()) + 1))
+    k = target_h / np.median([b["y1"] - b["y0"] for b in boxes])
+    out = []
+    for i, b in enumerate(boxes):
+        info = crop_save(img, b, 3, k, f"{key}{i}")   # tiny pad: neighbouring arcs sit close
+        info.update(ax=round(((b["x0"] + b["x1"]) / 2 - info["ox"]) * k, 2), ay=round((b["y1"] - info["oy"]) * k, 2))
+        out.append(info)
+    return out
+
 manifest["props"] = {
     "browser": prop_frames(F["browser"], "browser", 118),
     "quill": prop_frames(F["quill"], "quill", 112),
+    "mic": level_frames(F["mic"], "mic", 92),
 }
 
 (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1))
