@@ -148,6 +148,15 @@ sound playing when the frame reaches the screen (now + the last frame's draw-and
 (~13-15 fps expected at ~56 ms frames); pixels read as aligned 16-bit words. If still not
 smooth: render on the second core.
 
+**Performance review (2026-11-16, board on `e1c77f8`):** frame 61 ms = **draw 42 ms (~70%)**
++ **send 19 ms (~30%)**, ~8 fps (pacing waited as long again). Screen clock: SH8601 QSPI at
+**40 MHz** (Gadget's AMOLED default; xiaozhi's V1 also uses 40). Sending is serial: one
+16-row DMA bounce buffer, copy then wait per band, no overlap. Caps: the face's own minimum
+33 ms; Gadget's 100 ms model tick doesn't limit the face. Reviewed the user's 7 suggestions;
+order agreed in chat: measure `4d16a33` as baseline, then 80 MHz QSPI, a 30 fps "mouth lane"
+between full frames, then overlapped sending / second core. Already done: art as RGB565
+from a dedicated partition, copied to PSRAM; lip sync stamped at play time.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):
