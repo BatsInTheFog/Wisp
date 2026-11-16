@@ -153,7 +153,7 @@ smooth: render on the second core.
 **40 MHz** (Gadget's AMOLED default; xiaozhi's V1 also uses 40). Sending is serial: one
 16-row DMA bounce buffer, copy then wait per band, no overlap. Caps: the face's own minimum
 33 ms; Gadget's 100 ms model tick doesn't limit the face. Reviewed the user's 7 suggestions;
-order agreed in chat: measure `4d16a33` as baseline, then 80 MHz QSPI, a 30 fps "mouth lane"
+order proposed (awaiting the user): measure `4d16a33` as baseline, then 80 MHz QSPI, a 30 fps "mouth lane"
 between full frames, then overlapped sending / second core. Already done: art as RGB565
 from a dedicated partition, copied to PSRAM; lip sync stamped at play time.
 
