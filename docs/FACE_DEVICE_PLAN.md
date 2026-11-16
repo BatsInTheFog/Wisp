@@ -141,6 +141,13 @@ gets a loudness and the time it will be heard (after the queue, plus `kLipLatenc
 to tune by eye); each frame takes the loudest chunk heard since the last frame, scaled to a
 decaying recent peak; closed between bursts.
 
+Flashed `e1c77f8`. User: mouth slightly behind the speech; animation still low frame rate.
+Next build (fork `4d16a33`, 676 tests pass, built; needs an OK to flash): the mouth takes the
+sound playing when the frame reaches the screen (now + the last frame's draw-and-send time),
+`kLipLatencyMs` 60 → 0; pacing waits a quarter of a slow frame's time instead of all of it
+(~13-15 fps expected at ~56 ms frames); pixels read as aligned 16-bit words. If still not
+smooth: render on the second core.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):
