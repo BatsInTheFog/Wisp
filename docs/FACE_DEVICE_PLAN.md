@@ -126,7 +126,11 @@ Flashed `afb00cb`: no restarts; lowest internal RAM 88 KB (was 496 bytes); frame
 (render ~56 ms, flush ~19 ms), so with pacing ~6-7 fps. The user is fine with a lower frame
 rate. The board's console didn't know `face` (the port registers commands by name).
 Next build (fork `e2ae49b`, 675 tests pass): art copied to PSRAM at start-up (the flash reads
-in DIO), a faster `Canvas::blit`, `face` registered on the console. **Needs an OK to flash.**
+in DIO), a faster `Canvas::blit`, `face` registered on the console. **Flashed:** no restarts;
+frame ~56 ms (render ~37 ms, flush ~19 ms, p95 59 ms), so with pacing **~9 fps, steady**,
+leaving the app task half its time; console answers in ~1 s; lowest internal RAM 88 KB;
+PSRAM 2.4 MB free with the art copy. Accepted as the board's rate for now (user is fine
+with a lower rate). Possible later gains: render on the second core, fewer moving rows.
 
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
