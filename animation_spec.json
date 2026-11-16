@@ -1,0 +1,318 @@
+{
+  "name": "familiar-face",
+  "version": 1,
+  "screen": [
+    368,
+    448
+  ],
+  "layout": {
+    "scale": 0.3588299024918743,
+    "eyeL": [
+      89.45,
+      362.77
+    ],
+    "eyeR": [
+      278.73,
+      362.05
+    ],
+    "mouth": [
+      184.72,
+      381.79
+    ],
+    "flame": [
+      183.28,
+      302.48
+    ]
+  },
+  "blink": {
+    "halfEyes": 9,
+    "closedEyes": 14,
+    "timingMs": [
+      45,
+      70,
+      45
+    ]
+  },
+  "flameStyle": "warp",
+  "tuning": {
+    "eyeLine": 224,
+    "faceSize": 1,
+    "flameSize": 0.86,
+    "upLift": 2.2,
+    "follow": 1.45,
+    "pitch": 0.23,
+    "glance": 11,
+    "turn": 0.12,
+    "hold": 2.2,
+    "saccade": 0.075,
+    "blinkEvery": 4.5,
+    "breath": 2,
+    "sway": 9,
+    "flow": 1.3,
+    "pulse": 0.25,
+    "lag": 0.35,
+    "propSize": 1.16,
+    "quillSize": 1.46,
+    "quillTravel": 64,
+    "propX": 290,
+    "propY": 345,
+    "propFps": 5,
+    "squash": 0.28,
+    "turnMouths": 1,
+    "turn1": 0.28,
+    "turn2": 0.62,
+    "mouthFore": 0.19,
+    "mouthRot": 7,
+    "mouthScale": 1.1,
+    "mouthDepth": 0.71
+  },
+  "props": {
+    "browserSize": 1.16,
+    "quillSize": 1.46,
+    "quillStroke": 64,
+    "x": 290,
+    "y": 345,
+    "fps": 5
+  },
+  "turnedMouths": {
+    "on": true,
+    "firstStepAt": 0.28,
+    "fullStepAt": 0.62,
+    "twoStepSwitchAt": 0.45,
+    "hysteresis": 0.05,
+    "fade": false,
+    "squeeze": 0.19,
+    "tiltDeg": 7,
+    "parallaxOnly": [
+      "Wide"
+    ],
+    "sidesSwapped": [
+      "Smirk",
+      "Soft smile"
+    ],
+    "firstTurnSwapped": [
+      "Small"
+    ]
+  },
+  "parallax": {
+    "eyes": 1,
+    "mouth": 0.71,
+    "flame": 0.32,
+    "flameTrail": 1.4,
+    "flameSquashUp": 0.28
+  },
+  "face": {
+    "eyeCenterY": 224,
+    "scale": 1,
+    "flameScale": 0.86,
+    "liftLookingUp": 2.2,
+    "followGazeY": 1.45,
+    "tilt": 0.23
+  },
+  "states": {
+    "idle": {
+      "eyes": 0,
+      "eyesName": "Neutral",
+      "mouth": 0,
+      "gaze": "wander",
+      "blink": true,
+      "flame": {
+        "size": 1,
+        "brightness": 1,
+        "speed": 1
+      }
+    },
+    "listening": {
+      "eyes": 5,
+      "eyesName": "Wide",
+      "mouth": 3,
+      "gaze": "listen",
+      "blink": true,
+      "flame": {
+        "size": 1.05,
+        "brightness": 1.15,
+        "speed": 1.2
+      },
+      "prop": "quill"
+    },
+    "thinking": {
+      "eyes": 8,
+      "eyesName": "Skeptical",
+      "mouth": 11,
+      "gaze": "think",
+      "blink": true,
+      "flame": {
+        "size": 1,
+        "brightness": 1.05,
+        "speed": 1.9
+      },
+      "dots": true
+    },
+    "research": {
+      "eyes": 7,
+      "eyesName": "Side-eye",
+      "mouth": 0,
+      "gaze": "research",
+      "blink": true,
+      "flame": {
+        "size": 1.02,
+        "brightness": 1.1,
+        "speed": 2.2
+      },
+      "prop": "browser"
+    },
+    "notes": {
+      "eyes": 0,
+      "eyesName": "Neutral",
+      "mouth": 9,
+      "gaze": "notes",
+      "blink": true,
+      "flame": {
+        "size": 1,
+        "brightness": 1.05,
+        "speed": 1.1
+      },
+      "prop": "quill"
+    },
+    "speaking": {
+      "eyes": 0,
+      "eyesName": "Neutral",
+      "mouth": "lipsync",
+      "gaze": "listen",
+      "blink": true,
+      "flame": {
+        "size": 1.04,
+        "brightness": 1.1,
+        "speed": 1.3
+      }
+    },
+    "success": {
+      "eyes": 12,
+      "eyesName": "Happy",
+      "mouth": 7,
+      "gaze": "calm",
+      "blink": false,
+      "flame": {
+        "size": 1.05,
+        "brightness": 1.25,
+        "speed": 1.4
+      },
+      "flare": true
+    },
+    "sad": {
+      "eyes": 21,
+      "eyesName": "Crying",
+      "mouth": 11,
+      "gaze": "calm",
+      "blink": true,
+      "flame": {
+        "size": 0.86,
+        "brightness": 0.6,
+        "speed": 0.6
+      }
+    },
+    "annoyed": {
+      "eyes": 6,
+      "eyesName": "Angry",
+      "mouth": 12,
+      "gaze": "wander",
+      "blink": true,
+      "flame": {
+        "size": 1.04,
+        "brightness": 1.1,
+        "speed": 1.6
+      }
+    },
+    "sleepy": {
+      "eyes": 17,
+      "eyesName": "Asleep",
+      "mouth": 0,
+      "gaze": "still",
+      "blink": false,
+      "flame": {
+        "size": 0.74,
+        "brightness": 0.42,
+        "speed": 0.4
+      }
+    },
+    "love": {
+      "eyes": 20,
+      "eyesName": "Hearts",
+      "mouth": 8,
+      "gaze": "listen",
+      "blink": true,
+      "flame": {
+        "size": 1.06,
+        "brightness": 1.15,
+        "speed": 1.2
+      }
+    },
+    "excited": {
+      "eyes": 19,
+      "eyesName": "Starry",
+      "mouth": 6,
+      "gaze": "listen",
+      "blink": true,
+      "flame": {
+        "size": 1.06,
+        "brightness": 1.25,
+        "speed": 1.8
+      },
+      "flare": true
+    },
+    "wink": {
+      "eyes": 22,
+      "eyesName": "Wink",
+      "mouth": 10,
+      "gaze": "calm",
+      "blink": true,
+      "blinkOnly": "L",
+      "flame": {
+        "size": 1,
+        "brightness": 1.05,
+        "speed": 1
+      }
+    }
+  },
+  "eyeNames": [
+    "Neutral",
+    "Look left",
+    "Look down-left",
+    "Look up",
+    "Drowsy",
+    "Wide",
+    "Angry",
+    "Side-eye",
+    "Skeptical",
+    "Unimpressed",
+    "Half-lid",
+    "Slit",
+    "Happy",
+    "Closed soft",
+    "Closed flat",
+    "Smiling eyes",
+    "Wince",
+    "Asleep",
+    "Shocked",
+    "Starry",
+    "Hearts",
+    "Crying",
+    "Wink",
+    "Sparkle"
+  ],
+  "mouthNames": [
+    "Closed",
+    "Fang closed",
+    "Parted",
+    "Small",
+    "Medium",
+    "Open",
+    "Wide",
+    "Big smile",
+    "Smile",
+    "Soft smile",
+    "Smirk",
+    "Frown",
+    "Fang frown"
+  ]
+}

@@ -1,0 +1,598 @@
+<title>Wisp Face Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Rethink+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the device sits on a dark bench (sticky on wide screens); a narrow instrument panel of states, expressions and tuning sits beside it, stacked below on phones.
+   Deliberately single dark theme: this is an AMOLED test bench and the art only reads on black. */
+:root {
+  --bench: #070a09;          /* page ground, green-biased black */
+  --panel: #0e1513;          /* control surfaces */
+  --line: #1f2c28;           /* hairlines, slider tracks */
+  --ink: #d6e4dd;            /* primary text */
+  --mute: #84978f;           /* secondary text */
+  --flame: #41f0d2;          /* teal, the forehead flame */
+  --glow: #c6f75a;           /* lime, the eyes */
+  --ink-on-flame: #03231d;
+  --f-display: "Uncial Antiqua", "Palatino Linotype", Georgia, serif;
+  --f-body: "Rethink Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r: 10px;
+  color-scheme: dark;
+}
+html, body { background: var(--bench); color: var(--ink); }
+body { font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+  display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 32px; align-items: start;
+}
+@media (max-width: 820px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; padding-block: 16px 40px; } }
+
+/* ---------- device ---------- */
+.bench { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 14px; justify-items: center; }
+@media (max-width: 820px) { .bench { position: static; } }
+.title { justify-self: stretch; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: 30px; margin: 0; letter-spacing: .01em; color: var(--flame); text-wrap: balance; }
+.spec { font-family: var(--f-mono); font-size: 11.5px; color: var(--mute); letter-spacing: .04em; }
+.device {
+  width: min(100%, 410px); padding: 18px 14px 26px; border-radius: 34px;
+  background: linear-gradient(160deg, #161d1b, #0a0e0d 60%);
+  box-shadow: inset 0 0 0 1px #24302c, 0 20px 60px -20px #000;
+  display: grid; gap: 14px; justify-items: center;
+}
+canvas#screen {
+  width: 100%; max-width: 100%; aspect-ratio: 368 / 448; display: block;
+  background: #000; border-radius: 22px; cursor: crosshair; touch-action: manipulation;
+}
+.buttons { display: flex; gap: 10px; }
+.hw { width: 34px; height: 8px; border-radius: 4px; background: #232e2b; box-shadow: inset 0 1px 0 #2f3d39; }
+.status { font-family: var(--f-mono); font-size: 12px; color: var(--mute); min-height: 1.5em; text-align: center; }
+.status b { color: var(--flame); font-weight: 500; }
+
+/* ---------- panel ---------- */
+.panel { display: grid; gap: 22px; min-width: 0; }
+section { display: grid; gap: 10px; }
+h2 { margin: 0; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+.hint { margin: 0; color: var(--mute); font-size: 13.5px; max-width: 60ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: 500 14px var(--f-body); color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; cursor: pointer;
+}
+.chip:hover { border-color: #33463f; }
+.chip[aria-pressed="true"] { background: var(--flame); color: var(--ink-on-flame); border-color: var(--flame); }
+.chip:focus-visible, button:focus-visible, input:focus-visible, .thumb:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+
+.thumbs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 520px) { .thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.thumb {
+  background: #000; border: 1px solid var(--line); border-radius: 8px; padding: 4px 2px 3px; cursor: pointer;
+  display: grid; gap: 2px; justify-items: center; color: var(--mute); font: 11px var(--f-body);
+}
+.thumb canvas { width: 100%; height: auto; display: block; }
+.thumb[aria-pressed="true"] { border-color: var(--glow); color: var(--glow); }
+.mouths { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 520px) { .mouths { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.sliders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 22px; }
+@media (max-width: 520px) { .sliders { grid-template-columns: minmax(0, 1fr); } }
+.sl { display: grid; gap: 4px; }
+.sl label { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; }
+.sl output { font-family: var(--f-mono); font-size: 12px; color: var(--glow); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--flame); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  font: 600 14px var(--f-body); border-radius: 8px; padding: 9px 16px; cursor: pointer;
+  background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+}
+.btn.primary { background: var(--flame); color: var(--ink-on-flame); border-color: var(--flame); }
+textarea {
+  width: 100%; min-height: 150px; resize: vertical; box-sizing: border-box;
+  background: #000; color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+  font: 12px/1.45 var(--f-mono); padding: 10px;
+}
+.note { font-size: 13px; color: var(--mute); }
+@media (prefers-reduced-motion: reduce) { .chip, .btn { transition: none; } }
+</style>
+
+<div class="wrap">
+  <div class="bench">
+    <div class="title">
+      <h1>Wisp</h1>
+      <span class="spec">368 × 448 · SH8601 AMOLED · 1.8″</span>
+    </div>
+    <div class="device">
+      <canvas id="screen" width="368" height="448" aria-label="Animated face of Wisp. Tap to make her look there."></canvas>
+      <div class="buttons" aria-hidden="true"><span class="hw"></span><span class="hw"></span></div>
+    </div>
+    <div class="status" id="status" aria-live="polite">Loading the face…</div>
+  </div>
+
+  <div class="panel">
+    <section>
+      <h2>State</h2>
+      <p class="hint">Each state is what the device will show for a real event. Tap the screen to make her look where you tap.</p>
+      <div class="chips" id="states"></div>
+      <div class="row">
+        <button class="btn" id="blinkNow">Blink now</button>
+        <button class="btn" id="lookTour">Look in every direction</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Eyes</h2>
+      <p class="hint">Pick any of the 24 eye sets to try it over the current state. Picking a state again resets it.</p>
+      <div class="thumbs" id="eyePick"></div>
+    </section>
+
+    <section>
+      <h2>Mouth</h2>
+      <div class="thumbs mouths" id="mouthPick"></div>
+    </section>
+
+    <section>
+      <h2>Tuning</h2>
+      <div class="row">
+        <span class="note">Flame style</span>
+        <div class="chips" id="flameMode">
+          <button class="chip" data-mode="warp" aria-pressed="true">Flowing (one drawing)</button>
+          <button class="chip" data-mode="frames" aria-pressed="false">Frame loop (8 drawings)</button>
+        </div>
+      </div>
+      <div class="sliders" id="sliders"></div>
+    </section>
+
+    <section>
+      <h2>Animation spec</h2>
+      <p class="hint">When it feels right, copy this and paste it back to Claude. It becomes <code>animation_spec.json</code>, which the device firmware will follow.</p>
+      <div class="row">
+        <button class="btn primary" id="copySpec">Copy spec</button>
+        <button class="btn" id="resetTune">Reset tuning</button>
+        <span class="note" id="copyNote"></span>
+      </div>
+      <textarea id="specOut" readonly spellcheck="false"></textarea>
+    </section>
+  </div>
+</div>
+
+<script>
+const MANIFEST = __MANIFEST__;
+const EYE_NAMES = ["Neutral","Look left","Look down-left","Look up","Drowsy","Wide","Angry","Side-eye","Skeptical","Unimpressed","Half-lid","Slit","Happy","Closed soft","Closed flat","Smiling eyes","Wince","Asleep","Shocked","Starry","Hearts","Crying","Wink","Sparkle"];
+const MOUTH_NAMES = MANIFEST.mouthLadders.map(l => l.name);
+// keeps each mouth's forward drawing reachable the old way (pickers, thumbnails)
+MANIFEST.mouths = MANIFEST.mouthLadders.map(l => l.fwd);
+const BLINK = { half: 9, closed: 14 };
+
+// state -> look. gaze: wander | listen | think | research | still. flame: size, brightness, speed
+const STATES = {
+  idle:      { label: "Idle",       eyes: 0,  mouth: 0, gaze: "wander",   blink: true,  flame: [1.00, 1.00, 1.0] },
+  listening: { label: "Listening",  eyes: 5,  mouth: 3, gaze: "listen",   blink: true,  flame: [1.05, 1.15, 1.2], prop: "quill" },
+  thinking:  { label: "Thinking",   eyes: 8,  mouth: 11, gaze: "think",    blink: true,  flame: [1.00, 1.05, 1.9], dots: true },
+  research:  { label: "Researching",eyes: 7,  mouth: 0, gaze: "research", blink: true,  flame: [1.02, 1.10, 2.2] , prop: "browser" },
+  notes:     { label: "Taking notes", eyes: 0, mouth: 9, gaze: "notes",  blink: true,  flame: [1.00, 1.05, 1.1], prop: "quill" },
+  speaking:  { label: "Speaking",   eyes: 0,  mouth: 0, gaze: "listen",   blink: true,  flame: [1.04, 1.10, 1.3], talk: true },
+  success:   { label: "Success",    eyes: 12, mouth: 7, gaze: "calm",     blink: true , flame: [1.05, 1.25, 1.4], flare: true },
+  sad:       { label: "Sad / error",eyes: 21, mouth: 11, gaze: "calm",     blink: true , flame: [0.86, 0.60, 0.6] },
+  annoyed:   { label: "Annoyed",    eyes: 6,  mouth: 12, gaze: "wander",   blink: true,  flame: [1.04, 1.10, 1.6] },
+  sleepy:    { label: "Asleep",     eyes: 17, mouth: 0, gaze: "still",    blink: false, flame: [0.74, 0.42, 0.4] },
+  love:      { label: "Hearts",     eyes: 20, mouth: 8, gaze: "listen",   blink: true , flame: [1.06, 1.15, 1.2] },
+  excited:   { label: "Excited",    eyes: 19, mouth: 6, gaze: "listen",   blink: true , flame: [1.06, 1.25, 1.8], flare: true },
+  wink:      { label: "Wink",       eyes: 22, mouth: 10, gaze: "calm",     blink: true , flame: [1.00, 1.05, 1.0] },
+};
+
+const TUNE_DEFS = [
+  ["eyeLine",   "Eye height on screen",150, 300, 1, 224,  "px"],
+  ["faceSize",  "Face size",           0.75, 1.05, 0.01, 1, "×"],
+  ["flameSize", "Flame size",          0.5, 1.1, 0.01, 0.86, "×"],
+  ["upLift",    "Lift when looking up", 0, 2.5, 0.05, 2.2, "×"],
+  ["follow",    "Face follows gaze (up/down)", 0, 2, 0.05, 1.45, "×"],
+  ["pitch",     "Head-tilt depth",     0, 0.4, 0.01, 0.23, ""],
+  ["glance",    "Glance distance",     0, 30,  0.5, 11,   "px"],
+  ["turn",      "Head-turn depth",     0, 0.3, 0.01, 0.12, ""],
+  ["hold",      "Time between glances",0.6, 6, 0.1, 2.2,  "s"],
+  ["saccade",   "Glance speed",        0.02, 0.2, 0.005, 0.075, "s"],
+  ["blinkEvery","Blink every",         1.5, 10, 0.1, 4.5, "s"],
+  ["breath",    "Breathing",           0, 4,   0.1, 2,  "px"],
+  ["sway",      "Flame sway",          0, 14,  0.5, 9,    "px"],
+  ["flow",      "Flame flow speed",    0.1, 3, 0.05, 1.3,   "×"],
+  ["pulse",     "Glow pulse",          0, 0.5, 0.01, 0.25, ""],
+  ["lag",       "Flame lag",           0, 0.6, 0.01, 0.35, "s"],
+  ["propSize",  "Browser size",        0.6, 1.5, 0.01, 1.16, "×"],
+  ["quillSize", "Quill size",          0.6, 2, 0.01, 1.46, "×"],
+  ["quillTravel","Quill writing stroke", 0, 120, 1, 64, "px"],
+  ["propX",     "Browser / quill across", 200, 340, 1, 290, "px"],
+  ["propY",     "Browser / quill down", 300, 430, 1, 345, "px"],
+  ["propFps",   "Browser / quill speed", 1, 12, 0.5, 5, "fps"],
+  ["squash",    "Flame squash looking up", 0, 0.6, 0.01, 0.28, ""],
+  ["turnMouths","Turned mouths on (1) / off (0)", 0, 1, 1, 1, ""],
+  ["turn1",     "Glance that switches to the first turned mouth", 0.05, 0.9, 0.01, 0.28, ""],
+  ["turn2",     "Glance that switches to the full-turn mouth", 0.2, 1, 0.01, 0.62, ""],
+  ["mouthFore", "Mouth squeeze while turning", 0, 0.35, 0.01, 0.19, ""],
+  ["mouthRot",  "Mouth tilt while turning", 0, 14, 0.5, 7, "°"],
+  ["mouthScale","Mouth size",          0.7, 1.8, 0.01, 1.1, "×"],
+  ["mouthDepth","Mouth parallax",      0, 1, 0.01, 0.71, "×"],
+];
+const tune = {};
+const resetTune = () => TUNE_DEFS.forEach(d => tune[d[0]] = d[5]);
+resetTune();
+try { const saved = JSON.parse(localStorage.getItem("familiar-tune-v11") || "null"); if (saved) Object.assign(tune, saved); } catch (e) {}
+const saveTune = () => { try { localStorage.setItem("familiar-tune-v11", JSON.stringify(tune)); } catch (e) {} };
+
+// ---------- load images ----------
+const load = src => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
+const IMG = {};
+async function loadAll() {
+  const jobs = [];
+  MANIFEST.eyes.forEach(e => ["L", "R"].forEach(s => jobs.push(load(e[s].src).then(i => e[s].img = i))));
+  MANIFEST.mouthLadders.forEach(l => [l.fwd, ...l.right, ...l.left].forEach(m => jobs.push(load(m.src).then(i => m.img = i))));
+  jobs.push(load(MANIFEST.flame.src).then(i => MANIFEST.flame.img = i));
+  MANIFEST.flameFrames.forEach(f => jobs.push(load(f.src).then(i => f.img = i)));
+  Object.values(MANIFEST.props).forEach(fr => fr.forEach(f => jobs.push(load(f.src).then(i => f.img = i))));
+  await Promise.all(jobs);
+}
+
+// ---------- runtime state ----------
+const cv = document.getElementById("screen"), ctx = cv.getContext("2d");
+const fcv = document.createElement("canvas"); fcv.width = 368; fcv.height = 448; const fctx = fcv.getContext("2d");
+const L = MANIFEST.layout;
+const E0 = MANIFEST.eyes[0];
+const EYE_CY = ((L.eyeL[1] - (E0.L.ay - 12 * 0) / 2) + (L.eyeR[1] - E0.R.ay / 2)) / 2; // middle of the neutral eyes
+const mouthStep = { mi: -1, side: "right", step: 0, n: 0 };
+const NO_TURN = new Set(["Wide"]); // parallax only: its turned drawings looked wrong
+const SWAP = new Set(["Smirk", "Soft smile"]); // these two were drawn with their left and right turns swapped
+const SWAP_FIRST = new Set(["Small"]); // only its in-between turn is swapped; its full turn is right
+let stateKey = "idle", eyeOverride = null, mouthOverride = null, flameMode = "warp";
+const gaze = { x: 0, y: 0 }, target = { x: 0, y: 0 }, lagG = { x: 0, y: 0 }, body = { y: 0 };
+let nextGlance = 0, nextBlink = 2, blinkT = -1, tapHoldUntil = 0, flareT = -10, dartSide = 1;
+let talk = { amp: 0, sylEnd: 0, peak: 0, pauseUntil: 0 };
+const fl = { size: 1, bright: 1, speed: 1 };
+let t = 0, last = performance.now();
+const prop = { name: null, alpha: 0 };
+// "Look in every direction": center, then 8 compass points, half a second each
+const TOUR = [[0,0],[0,-1],[0.7,-0.7],[1,0],[0.7,0.7],[0,1],[-0.7,0.7],[-1,0],[-0.7,-0.7],[0,0]];
+const tour = { i: -1, next: 0 };
+function stepTour() {
+  tour.i++;
+  if (tour.i >= TOUR.length) { tour.i = -1; tapHoldUntil = t; return; }
+  [target.x, target.y] = TOUR[tour.i]; tapHoldUntil = t + 0.7; nextGlance = tapHoldUntil; tour.next = t + 0.55;
+}
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const approach = (cur, tgt, dt, tau) => cur + (tgt - cur) * (1 - Math.exp(-dt / Math.max(tau, 1e-3)));
+
+function setState(k) {
+  stateKey = k; eyeOverride = null; mouthOverride = null;
+  if (STATES[k].flare) flareT = t;
+  nextGlance = t; // re-aim right away
+  if (k === "sleepy") { target.x = 0; target.y = 0.35; }
+  syncPickers(); renderStateChips(); updateStatus();
+}
+
+function chooseGaze(dt) {
+  const st = STATES[stateKey];
+  if (t < tapHoldUntil) return;
+  if (t < nextGlance) return;
+  const hold = tune.hold;
+  let big = false;
+  switch (st.gaze) {
+    case "wander":
+      if (Math.random() < 0.35) { target.x = rand(-0.08, 0.08); target.y = rand(-0.06, 0.06); }
+      else { const nx = rand(-1, 1), ny = rand(-0.6, 0.55); big = Math.hypot(nx - target.x, ny - target.y) > 0.9; target.x = nx; target.y = ny; }
+      nextGlance = t + hold * rand(0.55, 1.6); break;
+    case "listen":
+      target.x = rand(-0.12, 0.12); target.y = rand(-0.18, 0.04); nextGlance = t + hold * rand(0.6, 1.2); break;
+    case "think":
+      target.x = rand(0.45, 0.85); target.y = rand(-0.85, -0.55); nextGlance = t + hold * rand(0.5, 1.1); break;
+    case "research": // reading the window in the lower right: scan along a line, then drop to the next
+      dartSide *= -1; target.x = dartSide > 0 ? rand(0.75, 0.95) : rand(0.25, 0.45); target.y = rand(0.35, 0.65); big = Math.random() < 0.2;
+      nextGlance = t + rand(0.3, 0.7); break;
+    case "notes": // watching the quill write
+      target.x = rand(0.5, 0.8); target.y = rand(0.5, 0.7); nextGlance = t + hold * rand(0.25, 0.6); break;
+    case "calm": // a held expression: slower, smaller glances
+      if (Math.random() < 0.4) { target.x = rand(-0.1, 0.1); target.y = rand(-0.08, 0.08); }
+      else { target.x = rand(-0.7, 0.7); target.y = rand(-0.45, 0.4); big = Math.random() < 0.15; }
+      nextGlance = t + hold * rand(0.9, 1.9); break;
+    default:
+      target.x = approach(target.x, 0, dt, 0.5); target.y = stateKey === "sleepy" ? 0.35 : approach(target.y, 0, dt, 0.5);
+      nextGlance = t + 1; break;
+  }
+  if (big && canBlink() && blinkT < 0 && Math.random() < 0.6) blinkT = t;
+}
+
+function updateTalk() {
+  if (!STATES[stateKey].talk) { talk.amp = 0; return; }
+  if (t < talk.pauseUntil) { talk.amp = approach(talk.amp, 0, 1 / 60, 0.05); return; }
+  if (t > talk.sylEnd) {
+    if (Math.random() < 0.12) { talk.pauseUntil = t + rand(0.25, 0.6); talk.peak = 0; }
+    else talk.peak = rand(0.25, 1);
+    talk.sylEnd = t + rand(0.09, 0.22);
+  }
+  const ph = 1 - (talk.sylEnd - t) / 0.16;
+  talk.amp = talk.peak * Math.sin(clamp(ph, 0, 1) * Math.PI);
+}
+
+// eyes that are already shut, per side: these never blink (a wink blinks only its open eye)
+const EYE_SHUT = { 11: "LR", 12: "LR", 13: "LR", 14: "LR", 15: "LR", 17: "LR", 23: "LR", 22: "R" };
+const baseEyeIndex = () => eyeOverride ?? STATES[stateKey].eyes;
+const canBlink = () => stateKey !== "sleepy" && (EYE_SHUT[baseEyeIndex()] || "") !== "LR";
+function blinkFrame() {           // null when not blinking, else the eye drawing to show this instant
+  if (blinkT < 0) return null;
+  const e = t - blinkT;
+  if (e < 0.045) return BLINK.half;
+  if (e < 0.115) return BLINK.closed;
+  if (e < 0.16) return BLINK.half;
+  blinkT = -1; nextBlink = t + tune.blinkEvery * rand(0.6, 1.4);
+  return null;
+}
+function currentEyeIndex() { const b = blinkFrame(); return b ?? baseEyeIndex(); }
+function currentMouthIndex() {
+  if (mouthOverride !== null) return mouthOverride;
+  const st = STATES[stateKey];
+  if (st.talk) { const a = talk.amp; return a < 0.08 ? 0 : a < 0.25 ? 2 : a < 0.45 ? 3 : a < 0.65 ? 4 : a < 0.85 ? 5 : 6; }
+  return st.mouth;
+}
+
+function drawPart(info, x, y, sx = 1, sy = sx) {
+  ctx.drawImage(info.img, x - info.ax * sx, y - info.ay * sy, info.w * sx, info.h * sy);
+}
+
+function drawFlame(baseX, baseY, trail) {
+  const st = STATES[stateKey];
+  const flareK = st.flare ? Math.max(0, 1 - (t - flareT) / 0.9) : 0;
+  const size = tune.flameSize * fl.size * (1 + 0.08 * flareK * Math.sin(Math.min(1, (t - flareT) / 0.25) * Math.PI / 2));
+  const breathe = 1 + 0.025 * Math.sin(t * 1.7);
+  const pulse = 1 - tune.pulse + tune.pulse * (0.5 + 0.5 * Math.sin(t * 1.25));
+  ctx.globalAlpha = clamp(fl.bright * pulse * (1 + 0.3 * flareK), 0, 1.6) > 1 ? 1 : clamp(fl.bright * pulse * (1 + 0.3 * flareK), 0, 1);
+  // look up: flame squashes down and spreads; look down: it stretches a little
+  const up = Math.max(0, -lagG.y), down = Math.max(0, lagG.y);
+  const sx = size * (1 + tune.squash * 0.35 * up), sy = size * breathe * (1 - tune.squash * up) * (1 + tune.squash * 0.25 * down);
+  const speed = tune.flow * fl.speed;
+  if (flameMode === "frames") {
+    const fr = MANIFEST.flameFrames, n = fr.length, p = (t * speed * 5) % n;
+    const i0 = Math.floor(p), i1 = (i0 + 1) % n, f = p - i0;
+    const a = ctx.globalAlpha;
+    ctx.globalAlpha = a * (1 - f); drawPart(fr[i0], baseX + trail * 0.6, baseY, sx, sy);
+    ctx.globalAlpha = a * f;       drawPart(fr[i1], baseX + trail * 0.6, baseY, sx, sy);
+    ctx.globalAlpha = 1; return;
+  }
+  // warp strip-by-strip into an offscreen layer (normal blending, so strips never double up),
+  // then add the whole layer onto the screen
+  const info = MANIFEST.flame, img = info.img;
+  const w = info.w * sx, ay = info.ay;
+  const x0 = baseX - info.ax * sx, y0 = baseY - ay * sy;
+  fctx.clearRect(0, 0, 368, 448);
+  for (let y = 0; y < info.h; y++) {
+    const k = clamp(1 - y / ay, 0, 1), wgt = Math.pow(k, 1.6);
+    const off = wgt * (tune.sway * Math.sin(t * speed * 2.1 - y * 0.05)
+                + tune.sway * 0.45 * Math.sin(t * speed * 3.4 - y * 0.11 + 1.3)
+                + trail);
+    fctx.drawImage(img, 0, y, info.w, 1, x0 + off, y0 + y * sy, w, sy + 0.5);
+  }
+  ctx.drawImage(fcv, 0, 0);
+  ctx.globalAlpha = 1;
+}
+
+// the browser or quill floats in the lower right while she works
+function drawProp(dt) {
+  const want = STATES[stateKey].prop || null;
+  if (want && want !== prop.name && prop.alpha < 0.05) prop.name = want;
+  prop.alpha = approach(prop.alpha, want && want === prop.name ? 1 : 0, dt, 0.12);
+  if (!prop.name || prop.alpha < 0.01) return;
+  const fr = MANIFEST.props[prop.name], n = fr.length;
+  const p = (t * tune.propFps) % n, i0 = Math.floor(p), i1 = (i0 + 1) % n, f = p - i0;
+  const pop = 0.85 + 0.15 * prop.alpha;
+  let x = tune.propX + Math.sin(t * 1.3) * 2, y = tune.propY + Math.sin(t * 1.9 + 0.7) * 3, size = tune.propSize;
+  if (prop.name === "quill") {
+    // write a line left to right (wiggling like handwriting), then lift and sweep back
+    const period = 2.6, ph = (t % period) / period, travel = tune.quillTravel, left = tune.propX - 20 - travel / 2;
+    if (ph < 0.82) { const k = ph / 0.82; x = left + travel * k; y = tune.propY + 22 + Math.sin(k * 38) * 2.2 + Math.sin(k * 11) * 1.2; }
+    else { const k = (ph - 0.82) / 0.18, e = k * k * (3 - 2 * k); x = left + travel * (1 - e); y = tune.propY + 22 - 9 * Math.sin(k * Math.PI); }
+    size = tune.quillSize;
+  }
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = prop.alpha * (1 - f); drawPart(fr[i0], x, y, size * pop);
+  ctx.globalAlpha = prop.alpha * f;       drawPart(fr[i1], x, y, size * pop);
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+}
+
+function drawDots() {
+  for (let i = 0; i < 3; i++) {
+    const ph = (t * 2.2 - i * 0.35) % 2;
+    const a = 0.35 + 0.65 * Math.max(0, Math.sin(Math.min(ph, 1) * Math.PI));
+    ctx.globalAlpha = a; ctx.fillStyle = "#e4ff9a"; ctx.shadowColor = "#b6f54c"; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(276 + i * 22, 150 - 4 * Math.max(0, Math.sin(Math.min(ph, 1) * Math.PI)), 7, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+}
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
+  const st = STATES[stateKey];
+  chooseGaze(dt);
+  if (canBlink() && blinkT < 0 && t > nextBlink) blinkT = t;
+  if (!canBlink() && blinkT < 0) nextBlink = t + tune.blinkEvery;
+  if (tour.i >= 0 && t > tour.next) stepTour();
+  updateTalk();
+  // micro drift keeps her from freezing
+  const drift = { x: 0.05 * Math.sin(t * 0.7) + 0.03 * Math.sin(t * 1.9), y: 0.04 * Math.sin(t * 0.9 + 1) };
+  gaze.x = approach(gaze.x, target.x + drift.x, dt, tune.saccade);
+  gaze.y = approach(gaze.y, target.y + drift.y, dt, tune.saccade);
+  lagG.x = approach(lagG.x, gaze.x, dt, tune.lag); lagG.y = approach(lagG.y, gaze.y, dt, tune.lag);
+  body.y = approach(body.y, gaze.y, dt, 0.11); // the head follows the eyes a moment later
+  fl.size = approach(fl.size, st.flame[0], dt, 0.35); fl.bright = approach(fl.bright, st.flame[1], dt, 0.35); fl.speed = approach(fl.speed, st.flame[2], dt, 0.5);
+
+  const D = tune.glance, breath = tune.breath * Math.sin(t * (stateKey === "sleepy" ? 0.9 : 1.6));
+  ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 368, 448);
+  ctx.globalCompositeOperation = "lighter";
+  // whole face: scale about the eye line, then lift
+  const fs = tune.faceSize;
+  const bodyShift = body.y * D * tune.follow; // whole face moves up or down with her gaze
+  ctx.setTransform(fs, 0, 0, fs, 184 - 184 * fs, tune.eyeLine - EYE_CY * fs + bodyShift * fs);
+  // head tilt: looking up or down flattens the features and pulls them closer together
+  const tilt = Math.abs(gaze.y) * tune.pitch, down = Math.max(0, gaze.y);
+  // looking up lifts the face extra far; the flame base lifts less, so the flame squashes between
+  const lift = Math.min(0, gaze.y) * D * tune.upLift, liftLag = Math.min(0, lagG.y) * D * tune.upLift;
+
+  // flame: moves least, trails behind head turns
+  const trail = (lagG.x - gaze.x) * D * 1.4;
+  drawFlame(L.flame[0] + lagG.x * D * 0.32, L.flame[1] + lagG.y * D * 0.25 + liftLag * 0.55 - down * tune.pitch * 60 + breath * 0.6, trail);
+
+  // eyes: move most, near eye widens, far eye narrows
+  const baseEye = baseEyeIndex(), bf = blinkFrame(), shut = EYE_SHUT[baseEye] || "";
+  [["L", -1], ["R", 1]].forEach(([s, sgn]) => {
+    const info = MANIFEST.eyes[bf !== null && !shut.includes(s) ? bf : baseEye][s], a = L["eye" + s];
+    const away = Math.max(0, sgn * gaze.x), toward = Math.max(0, -sgn * gaze.x);
+    const sx = 1 - tune.turn * away + tune.turn * 0.45 * toward;
+    const x = a[0] + info.dx + gaze.x * D - sgn * tune.turn * away * 26;
+    const y = a[1] + info.dy + gaze.y * D * 0.7 + lift + breath;
+    // eyes are anchored at their lower edge; flattening them reads as the head tipping
+    drawPart(info, x, y - info.ay * tilt * 0.35, sx, 1 - tilt);
+  });
+
+  // mouth: middle depth
+  // mouth: within each drawing, squeeze and tilt it as her head turns (parallax); at the switch point,
+  // snap to the next, more turned drawing. Some shapes (Wide) never switch and only use parallax.
+  // A little hysteresis keeps it from flickering when her gaze rests near a switch point.
+  const mi = currentMouthIndex(), lad = MANIFEST.mouthLadders[mi], ag = Math.abs(gaze.x), ms = tune.mouthScale;
+  const side = gaze.x >= 0 ? "right" : "left", sgn = gaze.x >= 0 ? 1 : -1;
+  const drawnSide = SWAP.has(lad.name) ? (side === "right" ? "left" : "right") : side;
+  const otherSide = drawnSide === "right" ? "left" : "right";
+  let turns = tune.turnMouths && !NO_TURN.has(lad.name) ? lad[drawnSide] : [];
+  if (turns.length === 2 && SWAP_FIRST.has(lad.name)) turns = [lad[otherSide][0], turns[1]];
+  const steps = [lad.fwd, ...turns];
+  const points = steps.length === 3 ? [tune.turn1, tune.turn2] : steps.length === 2 ? [(tune.turn1 + tune.turn2) / 2] : [];
+  let want = 0; points.forEach((p, k) => { if (ag > p) want = k + 1; });
+  const H = 0.05;
+  if (mouthStep.mi !== mi || mouthStep.side !== side || mouthStep.n !== steps.length) Object.assign(mouthStep, { mi, side, step: want, n: steps.length });
+  else if (want > mouthStep.step) mouthStep.step = want;
+  else if (want < mouthStep.step && ag < points[mouthStep.step - 1] - H) mouthStep.step = want;
+  const k = Math.min(mouthStep.step, steps.length - 1), m = steps[k];
+  // how far through this drawing's range she has turned (0..1)
+  const bounds = [0, ...points, 1], lo = bounds[k], hi = bounds[k + 1];
+  const prog = clamp((ag - lo) / Math.max(hi - lo, 1e-3), 0, 1);
+  const squeeze = 1 - tune.mouthFore * prog, rot = -sgn * tune.mouthRot * prog * Math.PI / 180;
+  const mx = L.mouth[0] + gaze.x * D * tune.mouthDepth;
+  const my = L.mouth[1] + gaze.y * D * tune.mouthDepth * 0.6 + lift * 0.85 - tilt * (L.mouth[1] - EYE_CY) * 0.9 + breath * 0.8;
+  ctx.save(); ctx.translate(mx, my); ctx.rotate(rot);
+  drawPart(m, sgn * tune.mouthFore * prog * 6, 0, ms * squeeze, ms * (1 - tilt * 0.6));
+  ctx.restore();
+
+  ctx.globalCompositeOperation = "source-over";
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (st.dots && eyeOverride === null) drawDots();
+  drawProp(dt);
+  requestAnimationFrame(frame);
+}
+
+// ---------- UI ----------
+function renderStateChips() {
+  const box = document.getElementById("states");
+  if (!box.children.length) {
+    Object.entries(STATES).forEach(([k, s]) => {
+      const b = document.createElement("button"); b.className = "chip"; b.id = "st-" + k; b.textContent = s.label;
+      b.onclick = () => setState(k); box.appendChild(b);
+    });
+  }
+  [...box.children].forEach(b => b.setAttribute("aria-pressed", b.id === "st-" + stateKey && eyeOverride === null && mouthOverride === null ? "true" : "false"));
+}
+function thumbCanvas(draw, w, h) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d"); x.fillStyle = "#000"; x.fillRect(0, 0, w, h); x.globalCompositeOperation = "lighter"; draw(x); return c;
+}
+function buildPickers() {
+  const ep = document.getElementById("eyePick");
+  MANIFEST.eyes.forEach((e, i) => {
+    const b = document.createElement("button"); b.className = "thumb"; b.id = "eye-" + i; b.title = EYE_NAMES[i];
+    b.appendChild(thumbCanvas(x => {
+      const s = 0.42;
+      x.drawImage(e.L.img, 46 - e.L.ax * s + e.L.dx * s, 52 - e.L.ay * s + e.L.dy * s, e.L.w * s, e.L.h * s);
+      x.drawImage(e.R.img, 114 - e.R.ax * s + e.R.dx * s, 52 - e.R.ay * s + e.R.dy * s, e.R.w * s, e.R.h * s);
+    }, 160, 64));
+    const lab = document.createElement("span"); lab.textContent = EYE_NAMES[i]; b.appendChild(lab);
+    b.onclick = () => { eyeOverride = i; blinkT = -1; syncPickers(); renderStateChips(); updateStatus(); };
+    ep.appendChild(b);
+  });
+  const mp = document.getElementById("mouthPick");
+  MANIFEST.mouths.forEach((m, i) => {
+    const b = document.createElement("button"); b.className = "thumb"; b.id = "mouth-" + i;
+    b.appendChild(thumbCanvas(x => { const s = 0.9; x.translate(60, 0); x.drawImage(m.img, -m.ax * s, 30 - m.ay * s, m.w * s, m.h * s); }, 120, 60));
+    const lab = document.createElement("span"); lab.textContent = MOUTH_NAMES[i]; b.appendChild(lab);
+    b.onclick = () => { mouthOverride = i; syncPickers(); renderStateChips(); updateStatus(); };
+    mp.appendChild(b);
+  });
+}
+function syncPickers() {
+  const st = STATES[stateKey];
+  document.querySelectorAll("#eyePick .thumb").forEach((b, i) => b.setAttribute("aria-pressed", i === (eyeOverride ?? st.eyes) ? "true" : "false"));
+  document.querySelectorAll("#mouthPick .thumb").forEach((b, i) => b.setAttribute("aria-pressed", i === (mouthOverride ?? (st.talk ? -1 : st.mouth)) ? "true" : "false"));
+}
+function updateStatus() {
+  const st = STATES[stateKey];
+  const custom = eyeOverride !== null || mouthOverride !== null;
+  document.getElementById("status").innerHTML = custom
+    ? `Trying <b>${EYE_NAMES[eyeOverride ?? st.eyes]}</b> eyes with a <b>${MOUTH_NAMES[mouthOverride ?? st.mouth].toLowerCase()}</b> mouth`
+    : `State: <b>${st.label}</b>${st.talk ? " · lip sync simulated" : ""}`;
+}
+function buildSliders() {
+  const box = document.getElementById("sliders");
+  TUNE_DEFS.forEach(([k, label, min, max, step, def, unit]) => {
+    const d = document.createElement("div"); d.className = "sl";
+    d.innerHTML = `<label for="t-${k}"><span>${label}</span><output id="o-${k}"></output></label>
+      <input type="range" id="t-${k}" min="${min}" max="${max}" step="${step}">`;
+    box.appendChild(d);
+    const inp = d.querySelector("input"), out = d.querySelector("output");
+    const show = () => { out.textContent = (+tune[k]).toFixed(step < 0.1 ? 2 : step < 1 ? 1 : 0) + (unit ? " " + unit : ""); };
+    inp.value = tune[k]; show();
+    inp.oninput = () => { tune[k] = +inp.value; show(); saveTune(); writeSpec(); };
+  });
+}
+function syncSliders() { TUNE_DEFS.forEach(([k]) => { const i = document.getElementById("t-" + k); i.value = tune[k]; i.dispatchEvent(new Event("input")); }); }
+
+function writeSpec() {
+  const spec = {
+    name: "familiar-face", version: 1, screen: MANIFEST.screen,
+    layout: MANIFEST.layout, blink: { halfEyes: BLINK.half, closedEyes: BLINK.closed, timingMs: [45, 70, 45] },
+    flameStyle: flameMode, tuning: Object.fromEntries(TUNE_DEFS.map(d => [d[0], +tune[d[0]]])),
+    props: { browserSize: tune.propSize, quillSize: tune.quillSize, quillStroke: tune.quillTravel, x: tune.propX, y: tune.propY, fps: tune.propFps },
+    turnedMouths: { on: !!tune.turnMouths, firstStepAt: tune.turn1, fullStepAt: tune.turn2, twoStepSwitchAt: (tune.turn1 + tune.turn2) / 2, hysteresis: 0.05, fade: false, squeeze: tune.mouthFore, tiltDeg: tune.mouthRot, parallaxOnly: [...NO_TURN], sidesSwapped: [...SWAP], firstTurnSwapped: [...SWAP_FIRST] },
+    parallax: { eyes: 1, mouth: tune.mouthDepth, flame: 0.32, flameTrail: 1.4, flameSquashUp: tune.squash },
+    face: { eyeCenterY: tune.eyeLine, scale: tune.faceSize, flameScale: tune.flameSize, liftLookingUp: tune.upLift, followGazeY: tune.follow, tilt: tune.pitch },
+    states: Object.fromEntries(Object.entries(STATES).map(([k, s]) => [k, {
+      eyes: s.eyes, eyesName: EYE_NAMES[s.eyes], mouth: s.talk ? "lipsync" : s.mouth, gaze: s.gaze, blink: k !== "sleepy" && (EYE_SHUT[s.eyes] || "") !== "LR", ...(EYE_SHUT[s.eyes] === "R" ? { blinkOnly: "L" } : {}),
+      flame: { size: s.flame[0], brightness: s.flame[1], speed: s.flame[2] }, ...(s.dots ? { dots: true } : {}), ...(s.prop ? { prop: s.prop } : {}), ...(s.flare ? { flare: true } : {})
+    }])),
+    eyeNames: EYE_NAMES, mouthNames: MOUTH_NAMES,
+  };
+  document.getElementById("specOut").value = JSON.stringify(spec, null, 2);
+}
+
+document.getElementById("copySpec").onclick = () => {
+  const ta = document.getElementById("specOut"), note = document.getElementById("copyNote");
+  const done = ok => { note.textContent = ok ? "Copied." : "Selected. Press copy on your keyboard."; if (!ok) { ta.focus(); ta.select(); } };
+  try { navigator.clipboard.writeText(ta.value).then(() => done(true), () => done(false)); } catch (e) { done(false); }
+};
+document.getElementById("blinkNow").onclick = () => { if (canBlink()) blinkT = t; };
+document.getElementById("lookTour").onclick = () => { tour.i = -1; tour.next = 0; stepTour(); };
+document.getElementById("resetTune").onclick = () => { resetTune(); syncSliders(); saveTune(); writeSpec(); };
+document.querySelectorAll("#flameMode .chip").forEach(b => b.onclick = () => {
+  flameMode = b.dataset.mode;
+  document.querySelectorAll("#flameMode .chip").forEach(c => c.setAttribute("aria-pressed", c === b ? "true" : "false"));
+  writeSpec();
+});
+cv.addEventListener("pointerdown", ev => {
+  const r = cv.getBoundingClientRect();
+  const px = (ev.clientX - r.left) / r.width * 368, py = (ev.clientY - r.top) / r.height * 448;
+  target.x = clamp((px - 184) / 150, -1, 1); target.y = clamp((py - 250) / 170, -1, 1);
+  tapHoldUntil = t + 1.6; nextGlance = tapHoldUntil;
+  if (canBlink() && Math.random() < 0.5 && blinkT < 0) blinkT = t;
+});
+
+loadAll().then(() => {
+  buildPickers(); buildSliders(); renderStateChips(); syncPickers(); updateStatus(); writeSpec();
+  requestAnimationFrame(now => { last = now; frame(now); });
+}).catch(() => { document.getElementById("status").textContent = "The face images failed to load. Reload the page to try again."; });
+</script>
