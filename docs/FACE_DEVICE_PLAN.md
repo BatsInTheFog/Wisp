@@ -108,6 +108,15 @@ syllables while audio plays, not the real loudness (to add in step 5 if it reads
 the `wisp.mood` action for Hermes (later); the percentage is the AXP2101's own gauge, with
 no fitted curve for this battery yet, so it may read a little off.
 
+**Step 5 in progress (2026-11-16):** the port maps the `assets` partition and passes it to
+the app; the V1 UI uses all 448 rows (fork `b410574`). `wisp_face.bin` was written to
+0xC30000 (hash verified) and the firmware flashed. **First boot looped:** the face loaded
+(CRC check ~0.6 s), then `abort()` in the USB console's start-up: a lock allocation failed
+because internal RAM was used up by the parsed manifest/spec JSON (thousands of small
+allocations, which ESP-IDF keeps in internal RAM). Fix (fork, committed): free the parsed
+JSON once the renderer has copied its numbers (`WispFace::drop_metadata`). Built; needs an
+OK to flash. Still to measure afterwards: frame rate and memory with the face running.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):
