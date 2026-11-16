@@ -117,7 +117,13 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     board finds the network (signal -48 dBm, strong) but keeps failing with **reason 15,
     "4-way handshake timeout"**, which almost always means the password doesn't match.
     In PowerShell, use single quotes around the password (`$` and backtick are special
-    inside double quotes). Other possibility: router set to WPA3-only. The board allows 30 s for the check and the
+    inside double quotes). **That was it**: the password has a `$`; re-entered with single
+    quotes, the board joined (WPA2-PSK, channel 6).
+  - After joining, the board took a while (more than 30 s) to get an address from the
+    router: the log repeated `sta is connected, disconnect before connecting to new ap`.
+    Signal was weak at that moment (-85 dBm on one mesh point, -53 earlier). It then got an
+    address on its own, connected to Hermes, showed a pairing code, and the user approved
+    it: **the V1 board is paired with Hermes as "Wisp"** (2026-11-16). Watch for slow joins. The board allows 30 s for the check and the
     phone may drop off the setup network meanwhile (rejoin and reload to see the result).
     Needs a 2.4 GHz network.
   - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
@@ -253,5 +259,6 @@ Options considered, best first:
 
 ## Single next step
 
-Finish the first-boot checklist: touch (swipe down), then Wi-Fi + Hermes address via the
-phone setup page, pairing (`hermes gadget pair` on the Mac), mic, speaker.
+Finish the first-boot checklist on the paired board: touch (hold the screen to talk, swipe
+down to cancel), microphone (transcript correct), speaker (replies clear, `set volume 80`),
+PWR key as cancel, and check that touch isn't mirrored.
