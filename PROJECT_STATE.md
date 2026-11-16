@@ -350,9 +350,11 @@ Options considered, best first:
 
 ## Single next step
 
-**Plan Wisp's face on the device** (before writing code): how the art from `assets/parts`
-gets into the `assets` partition (format, size), how the renderer draws eyes, mouth, warped
-flame and props at 368x448 from `animation_spec.json`, how Gadget's screens map to Wisp's
-states (idle, listening + level-driven mic, thinking, speaking with lip sync, success,
-error, asleep), and the frame-rate budget on the SH8601. The UI will switch to the full
-448-row glass for it. Later: the tailnet, record mode, the `diag` display label.
+The face plan is written: [docs/FACE_DEVICE_PLAN.md](docs/FACE_DEVICE_PLAN.md). Get the
+user's answers to its four choices (text on the face, resting clock, moods from Hermes,
+greeting), then start **step 1: `tools/pack_face.py`** and the `wisp_face.bin` format, with
+a test that reads it back pixel-exact. Later: the tailnet, record mode, the `diag` label.
+
+Device settings made 2026-11-16 (in the board's flash, not in code): `screen_timeout` 210 s
+(dims at ~105 s, dark 60 s after the resting clock appears at 150 s), `clock` 150,
+`time_format` 12h, `timezone` Chicago, `volume` 80, `name` Wisp.
