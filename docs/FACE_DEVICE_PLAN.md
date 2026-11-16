@@ -167,14 +167,25 @@ from a dedicated partition, copied to PSRAM; lip sync stamped at play time.
 | 3. Mouth lane (`212c239`) | 13.6 | 5.2 + 0.8 | full frames while speaking cost too much to leave gaps |
 | Breakdown + text rows only (`e5ab93c`) | 14.9 | 6.1 + 2.9 | text changes had forced whole-band redraws (31 of 66) |
 | Mouth band from the drawings (`44de5b1`) | 14.9 | 6.5 + 4.4 | the band reached the eyes; mouth compose 32 → 17 ms |
-| Faster turned mouth, no flame in the band (`7eee4b8`) | **16.9** | **7.3 + 5.6 = 12.9** | mouth compose 4.9 ms |
+| Faster turned mouth, no flame in the band (`7eee4b8`) | 16.9 | 7.3 + 5.6 = 12.9 | mouth compose 4.9 ms |
+| 4. Compose on the second core (`4677d2b`) | **17.5** | **7.1 + 9.2 = 16.3** | worker compose 21 / 17 ms; showing a frame on the app task 26 / 38 ms |
 
 Breakdown now (idle / speaking): compose 20.7 / 30.1 ms, copy into the display buffer
 (PSRAM → PSRAM) 7.0 ms, text 0.4-0.5 ms, send 12.7 ms. While speaking, a full frame takes
 ~55-80 ms of wall time (audio and Wi-Fi tasks preempt the app task), leaving room for about
-one mouth frame between full frames. Next: step 4, compose on the second core
-(double-buffered) so full frames stop blocking the mouth lane; later, compose straight into
-the display buffer to drop the 7 ms copy.
+one mouth frame between full frames.
+
+Step 4 (2026-11-16): a task pinned to core 1 composes each face frame; the app task steps the
+face, hands the job over, leaves the renderer and face buffer alone until it is done, then
+shows the frame (copy + send) and starts the next. Strict turn-taking with one face buffer,
+so compose (~21 ms) and show (~26 ms idle, ~38 ms speaking) still add up per frame (~47 ms,
+so ~21 fps at best). The mouth lane is no longer starved (9.2 mouth frames/s). Possible next
+gains: a second face buffer so the next frame composes while the last one is shown (~330 KB
+PSRAM), and composing straight into the display buffer to drop the ~7 ms copy.
+
+Flashing note: use the plain `pio run -e esp32s3-touch-amoled-18-v1 -t upload`; adding
+`-t nobuild` makes PlatformIO write the app at its default 0x10000 instead of this board's
+0x20000, and the board then boot-loops until it is flashed again the normal way.
 
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 

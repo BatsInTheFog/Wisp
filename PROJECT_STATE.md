@@ -361,7 +361,9 @@ the preview (all 13 states; fork `2592253`; 670 core tests pass; board firmware 
 1675 KB). Try a state with the console: `face thinking`, `face auto`. **Step 4 done:** the face
 follows what Wisp is doing; resting clock = Wisp asleep + time + battery (fork `2b74467`,
 675 tests, board firmware 1677 KB; details and what's not done in the plan). **Step 5:** the face runs on the board (art in the `assets` partition, copied to PSRAM; full
-448 rows; ~9 fps steady; fork `e2ae49b`). **Next:** the user tries a real conversation on
+448 rows; ~9 fps steady; fork `e2ae49b`). **Performance (2026-11-16):** now 17.5 fps idle, 16.3 face frames/s while speaking
+(7.1 full + 9.2 mouth), with the face composed on the second core (fork `4677d2b`; steps and
+numbers in the plan's measurements table). **Next:** the user tries a real conversation on
 the board; then possibly real lip sync from the played audio and Hermes-triggered moods.
 Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
 Waveshare's V1 schematic), the `diag` label.
