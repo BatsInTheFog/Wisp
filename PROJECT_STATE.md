@@ -133,6 +133,12 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     strongest; forget a remembered access point heard below -75 dBm. Built, **not yet
     flashed**. After flashing, the first boot may still use the weak node once (and then
     forget it); a restart should land on the strong one.
+  - **Reading replies again:** Gadget keeps a finished reply on screen for 20 s, then the
+    mascot returns; only boards with Up/Down keys could bring it back. **Fork `980f396`
+    adds swipe up** on the touchscreen: the first swipe brings the last reply back, further
+    swipes page through it. Core tests pass (651, incl. a new one); built together with
+    the Wi-Fi fix, **not yet flashed**. Works in the simulator too (`sim-368x448`, drag up)
+    once it's started again.
   - If stutter remains with a good signal: turn on Opus for spoken replies (about a tenth
     of the data) by installing libopus on the Mac (`brew install opus`) and restarting the
     gateway. The board allows 30 s for the check and the
