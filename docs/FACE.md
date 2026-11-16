@@ -13,6 +13,7 @@ Wisp's conversation face: glowing eyes, mouth and a flowing forehead flame on pu
 | `assets/parts/` | Eyes, mouths, flame and props cut out and aligned to screen pixels, plus `manifest.json` with every part's anchor point. |
 | `tools/slice.py` | Cuts `assets/src` into `assets/parts`. |
 | `tools/build_preview.py` | Builds `preview/wisp-face-lab.html` from the template and parts. |
+| `tools/pack_face.py` | Packs the parts and spec into `build/wisp_face.bin` for the device ([FACE_FORMAT.md](FACE_FORMAT.md)). |
 
 ## Rebuilding after art changes
 

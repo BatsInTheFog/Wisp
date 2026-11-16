@@ -63,8 +63,10 @@ A new script turns `assets/parts` + `manifest.json` + `animation_spec.json` into
 - the tuned settings from `animation_spec.json` copied in, so the board and the preview
   can't drift apart.
 
-Expected size: well under 2 MB, to be confirmed by the script. The board reads it in place
-from flash (memory-mapped), so it costs no PSRAM.
+**Built (step 1 done, 2026-11-16):** 2.24 MB, 58% of the `assets` area, every part
+pixel-exact; format in [FACE_FORMAT.md](FACE_FORMAT.md). The board reads it in place from
+flash (memory-mapped), so it costs no PSRAM. If future art outgrows the area, the options
+are shrinking the two 6 MB app slots (the app uses 1.65 MB) or keeping art on the microSD card.
 
 Getting it onto the board: a one-line USB write to the `assets` area (address 0xC30000),
 separate from the firmware, so art changes don't need a firmware rebuild. Later, Hermes
@@ -135,12 +137,16 @@ updated.
 - **Upstream changes.** This adds a sizeable feature to the fork; pulling future Gadget
   updates may need small merges in the UI code.
 
-## Your choices (before step 4)
+## Decisions (2026-11-16)
 
-1. **Text on the face screen.** Keep no text on the face (replies via swipe up / swipe left),
-   or show the reply's latest 1-2 lines under her while she speaks, as Gadget does now?
-2. **The resting clock.** Keep Gadget's clock face, or show Wisp asleep with the time?
-3. **Moods from Hermes.** Should Hermes be able to set her mood (love, excited, wink,
-   annoyed) with a device action?
-4. **The "Hi, I'm Hermes" greeting** and the Gadget mascot on other screens: replace the
-   greeting text with Wisp's, and keep the mascot elsewhere?
+1. **Text on the face screen:** up to **two lines**, toward the **bottom** of the screen, so
+   the animation keeps its full size. Where text and art overlap, the **text draws on top**.
+   (Reply lines while she speaks, notices, the greeting.)
+2. **Resting clock:** **Wisp asleep in the top half**, the **time in the bottom half**
+   (replaces Gadget's clock face; same timing, dimming and burn-in shift rules).
+3. **Moods from Hermes:** yes, my call on the details. Plan: one device action,
+   `wisp.mood`, with `love`, `excited`, `wink`, `annoyed` (and `success` / `sad`), shown for
+   a few seconds and then back to the normal state; Hermes sees its description and can use
+   it when it fits. Low priority: after the main states work.
+4. **Greeting:** Wisp's own, near the bottom of the screen (wording to settle at step 4;
+   the device name "Wisp" is already set).

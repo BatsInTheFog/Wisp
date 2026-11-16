@@ -350,10 +350,13 @@ Options considered, best first:
 
 ## Single next step
 
-The face plan is written: [docs/FACE_DEVICE_PLAN.md](docs/FACE_DEVICE_PLAN.md). Get the
-user's answers to its four choices (text on the face, resting clock, moods from Hermes,
-greeting), then start **step 1: `tools/pack_face.py`** and the `wisp_face.bin` format, with
-a test that reads it back pixel-exact. Later: the tailnet, record mode, the `diag` label.
+Face work ([docs/FACE_DEVICE_PLAN.md](docs/FACE_DEVICE_PLAN.md); the user's four choices are
+recorded there). **Step 1 done:** `tools/pack_face.py` builds `build/wisp_face.bin` (2.24 MB,
+133 parts, pixel-exact; format in [docs/FACE_FORMAT.md](docs/FACE_FORMAT.md); tests in
+`tools/test_pack_face.py`, 5 pass). **Next: step 2**, a `FaceRenderer` in the fork's core
+that reads this file and draws the still idle face in the simulator (`sim-368x448`,
+full 448 rows), compared with the browser preview. Later: the tailnet, record mode, the
+microSD slot (V1 pins still to confirm from Waveshare's V1 schematic), the `diag` label.
 
 Device settings made 2026-11-16 (in the board's flash, not in code): `screen_timeout` 210 s
 (dims at ~105 s, dark 60 s after the resting clock appears at 150 s), `clock` 150,
