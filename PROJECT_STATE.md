@@ -33,8 +33,7 @@ _Last updated: 2026-11-16 (session 1, decisions on remote access and recordings)
 Note: the Hermes install on this Windows PC (`%LOCALAPPDATA%\hermes`) is only a remote
 client that connects to the Mac. The real Hermes (and the gadget plugin) lives on the Mac.
 
-Disk: about 21 GB free on C: after the Build Tools (2026-11-16). The ESP toolchain needs
-about 3 GB more.
+Disk: about 17 GB free on C: after the Build Tools and PlatformIO (2026-11-16).
 
 ## Toolchain
 
@@ -47,13 +46,15 @@ about 3 GB more.
 | CMake | 4.4.5, inside the Gadget checkout's `.venv` (from pip) |
 | Hermes Gadget checkout | `$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk`, outside the Wisp repo. Remotes: `origin` = fork `BatsInTheFog/hermes-gadget-sdk`, `upstream` = Adolanium's original (pushing to it is disabled). Work branch **`wisp`** (based on upstream `2ef17f6`, v0.5.0-127). Python 3.11 venv in `.venv` with `[dev,audio]` extras |
 | CMake | not installed (can come from pip inside a venv) |
-| ESP-IDF / PlatformIO | **not installed** (needed for firmware) |
-| esptool | not installed |
+| ESP-IDF / PlatformIO | PlatformIO Core 6.2.0 in the Gadget `.venv`; ESP-IDF comes with it (in `%USERPROFILE%\.platformio`) |
+| esptool | v5.4.0, bundled with PlatformIO |
 | GitHub CLI (`gh`) | not installed (git push works over the existing remote) |
 
 ## Build and flash commands
 
-PlatformIO not installed yet. Planned, from the Gadget checkout's `firmware/esp32` folder on
+PlatformIO Core 6.2.0 is installed in the Gadget checkout's `.venv` (run it as
+`..\..\.venv\Scripts\pio.exe` from `firmware\esp32`); its toolchains live in
+`%USERPROFILE%\.platformio`. Commands, from the Gadget checkout's `firmware/esp32` folder on
 the `wisp` branch:
 
 ```
@@ -89,11 +90,18 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 - Hermes Gadget officially supports only the **V2** 1.8" board. Our **V1 profile is written**
   on the fork's `wisp` branch (commit `f66e85f`): board option `esp32s3-touch-amoled-18-v1`,
   SH8601 driven through Gadget's AMOLED code with xiaozhi's V1 table, FT3168 touch at 0x38 /
-  INT 21. Gadget's firmware/docs tests pass (176). **Not yet compiled for the ESP32 and not
-  run on the board.** Risks to check on first boot: screen dark or shifted (start-up table),
+  INT 21. Gadget's firmware/docs tests pass (176). **Compiles for the ESP32** (2026-11-16,
+  first build 32 min incl. toolchain download): output in
+  `firmware\esp32\.pio\build\esp32s3-touch-amoled-18-v1\` (`firmware.bin` 1.65 MB).
+  **Not yet run on the board.** Risks to check on first boot: screen dark or shifted (start-up table),
   touch mirrored, mic gain. See [docs/V1_PORT.md](docs/V1_PORT.md).
 - Gadget's built-in face is 1-bit; Wisp's colour face needs its own renderer.
-- No ESP toolchain on this PC yet (the C++ compiler for the simulator is installed).
+- **App space is tight:** the firmware uses 1648 KB of its 1984 KB app slot (17% free), and
+  Gadget's build fails under 10% free. The tailnet adds about 114 KB (→ ~11% free), so record
+  mode and Wisp's face (art!) won't fit as is. The board has 16 MB flash but Gadget's
+  partition table gives each app slot only ~2 MB; plan a **16 MB partition table** for the V1
+  profile (bigger app slots, a data partition for face art) before those features. Changing
+  partitions means a full (USB) flash, not an over-the-air update.
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
   Keep the two in step when updating (plugin and firmware/simulator share the protocol).
 
@@ -206,6 +214,6 @@ Options considered, best first:
 
 ## Single next step
 
-Install PlatformIO on this PC (about 3 GB, ask first) and **build** the V1 firmware
-(`pio run -e esp32s3-touch-amoled-18-v1`), no flashing. Then, each with a separate OK: back up
-the board's full factory flash to a file, and flash the V1 firmware.
+Connect the board by USB and **back up its full 16 MB factory flash** to a file on this PC
+(read-only, ask first; the file stays out of git). Then, with a separate OK, flash the V1
+firmware and run the first-boot checklist in the fork's `docs/hardware.md`.
