@@ -130,9 +130,12 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     with a 10 s stalled send) while a near node was at -48 (channel 11). Cause: Gadget joins
     the first access point it hears (ESP-IDF fast scan) and fast join keeps returning to
     it. **Fix on the fork** (`a347dcd`, `port_wifi.cpp`): scan all channels and join the
-    strongest; forget a remembered access point heard below -75 dBm. Built, **not yet
-    flashed**. After flashing, the first boot may still use the weak node once (and then
-    forget it); a restart should land on the strong one.
+    strongest; forget a remembered access point heard below -75 dBm. Flashed together with
+    swipe-up (`980f396`) on 2026-11-16: the board went back to the remembered weak node
+    (channel 6, -78) and got stuck associated with **no address** for 2+ minutes, because
+    the "forget weak" step only runs once an address arrives. **Follow-up fix `f5444e1`**:
+    when a retry finds the board associated but without an address, forget the remembered
+    node and disconnect so it rejoins by scanning. Built, **not yet flashed** (needs OK).
   - **Reading replies again:** Gadget keeps a finished reply on screen for 20 s, then the
     mascot returns; only boards with Up/Down keys could bring it back. **Fork `980f396`
     adds swipe up** on the touchscreen: the first swipe brings the last reply back, further
