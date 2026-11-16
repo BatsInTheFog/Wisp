@@ -144,14 +144,18 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     the local build; the `build.time` in `diag` is the app-descriptor compile time and can
     look stale). Board stays on the strong node (channel 11, -49 to -62) but got **no
     address for 4+ minutes**.
-  - **Likely cause of the missing address:** Gadget's base config sets
-    `CONFIG_LWIP_DHCP_RESTORE_LAST_IP=y`, so DHCP asks straight for the last address saved
-    in flash instead of a fresh discovery; a router that doesn't expect that address can
-    ignore the request, and the client then sits in long retries. Fix: turn it off in the
-    V1 board's `sdkconfig.defaults` (fork `71a00d6`). Built (full rebuild, 12 min, since the generated
-    `sdkconfig.esp32s3-touch-amoled-18-v1` had to be deleted); **not yet flashed** (needs OK).
-    Fallback if it still fails: a DHCP reservation on the router for the board's MAC
-    <board MAC>.
+  - Suspected Gadget's `CONFIG_LWIP_DHCP_RESTORE_LAST_IP=y` (asks straight for the last
+    address); turned it off for the V1 board (fork `71a00d6`, full rebuild 12 min) and
+    flashed (fingerprint `e916b210cf337c2f`). **Didn't help:** associated to a strong node
+    (channel 6, -50) and still **no address after 2+ minutes**; the log shows only Gadget's
+    20 s retry (`sta is connected`). This PC (<home LAN address>, same network) sees no trace of
+    the board; its earlier address <home LAN address> doesn't answer. Fresh discovery is kept
+    (harmless, and fine with Tailscale: the tailnet address is separate).
+  - **Root cause still unknown.** It got an address once (slowly) on the original
+    firmware. Next checks, on the router side: does the router app list the board
+    (, maybe as "espressif"), is it paused/blocked, can it get a
+    reservation; restart the router/mesh points (many failed and repeated joins may have
+    made it throttle the board). On the board side if needed: DHCP debug logging.
   - Memory during these tests is healthy: internal RAM 168 KB free (lowest 135 KB), PSRAM
     5 MB free, recording buffer 1.49 MB, nothing dropped. Playback of 24 kHz speech is well
     within the ESP32-S3's means; the stutter matched the -87 to -91 dBm signal and a 10 s
