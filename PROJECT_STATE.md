@@ -123,7 +123,19 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     router: the log repeated `sta is connected, disconnect before connecting to new ap`.
     Signal was weak at that moment (-85 dBm on one mesh point, -53 earlier). It then got an
     address on its own, connected to Hermes, showed a pairing code, and the user approved
-    it: **the V1 board is paired with Hermes as "Wisp"** (2026-11-16). Watch for slow joins. The board allows 30 s for the check and the
+    it: **the V1 board is paired with Hermes as "Wisp"** (2026-11-16). Watch for slow joins.
+  - **First voice test on the board:** speech recognised, reply spoken, swipe-down cancel
+    works instantly. Volume was soft: set to 80 (`set volume 80`). **Replies stuttered**:
+    the board sat on a distant mesh node (-87 to -91 dBm, channel 6; one connection dropped
+    with a 10 s stalled send) while a near node was at -48 (channel 11). Cause: Gadget joins
+    the first access point it hears (ESP-IDF fast scan) and fast join keeps returning to
+    it. **Fix on the fork** (`a347dcd`, `port_wifi.cpp`): scan all channels and join the
+    strongest; forget a remembered access point heard below -75 dBm. Built, **not yet
+    flashed**. After flashing, the first boot may still use the weak node once (and then
+    forget it); a restart should land on the strong one.
+  - If stutter remains with a good signal: turn on Opus for spoken replies (about a tenth
+    of the data) by installing libopus on the Mac (`brew install opus`) and restarting the
+    gateway. The board allows 30 s for the check and the
     phone may drop off the setup network meanwhile (rejoin and reload to see the result).
     Needs a 2.4 GHz network.
   - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
