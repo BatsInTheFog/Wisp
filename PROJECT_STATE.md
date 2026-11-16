@@ -77,8 +77,8 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 - Hermes Gadget simulator builds on this PC (core tests pass: 3/3) and completes a headless
   smoke test against the local demo server on `sim-368x448` (2026-11-16): pairs, sends text,
   gets the echo reply.
-- **Simulator talks to the real Hermes on the Mac** (2026-11-16): `ws://<home LAN address>:8765/gadget`,
-  device "Wisp sim" paired. Typed messages, voice (PC mic → Mac speech-to-text) and spoken
+- **Simulator talks to the real Hermes on the Mac** (2026-11-16): the address is in
+  `config/wisp.local.json` (not committed), device "Wisp sim" paired. Typed messages, voice (PC mic → Mac speech-to-text) and spoken
   replies (Mac text-to-speech → PC speakers) all work.
   - To talk: **click and hold on the simulated screen**. Holding Space didn't seem to work in
     our test, probably because keyboard focus was in the text box.
@@ -89,16 +89,86 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 - Hermes Gadget officially supports only the **V2** 1.8" board. V1 needs a small board profile
   (different display and touch chips). See [docs/V1_PORT.md](docs/V1_PORT.md).
 - Gadget's built-in face is 1-bit; Wisp's colour face needs its own renderer.
-- No C++ compiler or ESP toolchain on this PC yet.
+- No ESP toolchain on this PC yet (the C++ compiler for the simulator is installed).
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
   Keep the two in step when updating (plugin and firmware/simulator share the protocol).
-- The Mac's address (<home LAN address>) could change; a DHCP reservation on the router would pin it.
+- The Mac's home-network address could change; a DHCP reservation on the router would pin it.
 
 ## Decisions
 
 - **Path:** fork Hermes Gadget; add a V1 board profile using xiaozhi's known-good V1 values;
   write Wisp's face as our own renderer inside Gadget's UI layer. (Session 1.)
 - Art stays in `assets/`, scripts in `tools/`, firmware separate (planned: `firmware/`).
+- **Stock Gadget face first.** Wisp's custom face (`animation_spec.json`) comes only after the
+  V1 board works with stock Gadget firmware.
+- **Hermes address is a setting, never compiled in.** Gadget already keeps it (with Wi-Fi,
+  pairing keys and any Tailscale key) in the device's flash storage (NVS), set over USB
+  (`set server ...`, `hermes-gadget provision`) or the phone setup page.
+
+## Two repositories, and where secrets live
+
+- **Fork:** `BatsInTheFog/hermes-gadget-sdk` (planned), a copy of Adolanium's Hermes Gadget
+  on GitHub. Forks of public repos are **public**. It holds only board code: the V1 profile,
+  later the long-recording mode and Wisp's face renderer. Work goes on a `wisp` branch so
+  upstream updates can be pulled into `main` and merged across.
+- **Wisp (this repo, private):** art, face spec, tools, docs, project state. It will point to
+  one exact commit of the fork (a git submodule at `firmware/hermes-gadget`), so a Wisp commit
+  always says which firmware it goes with.
+- **Secrets never go in either repo:** Wi-Fi password, Hermes address, pairing data, device
+  keys, Tailscale keys. They live in `config/wisp.local.json` on this PC (git-ignored; template
+  in `config/wisp.local.example.json`) and, once set, in the board's flash. The simulator's
+  identity lives in `%USERPROFILE%\.hermes-gadget\`, outside both repos.
+- Note: earlier Wisp commits mention the Mac's home-network address (192.168.x.x). It is only
+  reachable inside the home network and this repo is private, so the history was left as is.
+
+## Future requirements (planned, not built)
+
+### 1. Away-from-home access (e.g. at work)
+
+Hermes is only on the home network now. Options for the board, best first:
+
+| Option | How the ESP32 connects | Hermes exposed to the internet? | Status in Gadget |
+| --- | --- | --- | --- |
+| **A. Native tailnet** (recommended to try first) | The board joins your Tailscale tailnet itself using TailTiny (an independent ESP32 Tailscale client), with a one-off tagged auth key (`set ts_key`, `set tailnet on`). Connects to `ws://100.x.y.z:8765/gadget`. WireGuard encrypts it. | No | Built in but **experimental and off on every board**: we turn it on for our V1 profile (`b.tailnet = true` + 5 sdkconfig lines). Needs PSRAM (we have 8 MB). About 114 KB flash, 27 KB internal RAM, more battery use. |
+| **B. Tailscale Funnel** (fallback, no firmware change) | Plain internet: `wss://<mac>.<tailnet>.ts.net/gadget`. TLS with a Let's Encrypt certificate, which the firmware trusts. | Yes, the gadget port only; pairing + per-device key still guard it. An access token can be added. | Works with stock firmware on every board. |
+| C. Cloudflare Tunnel | Same as B with a Cloudflare address. | Yes | Works with current firmware (older firmware rejected Cloudflare's certificate chain). |
+| D. Plain WireGuard client | Would need a WireGuard library added and a server to run. | No | Not in Gadget; no reason to build it while A exists. |
+
+- Either way the Hermes address stays a setting. Moving between home and work needs no
+  rebuild: with A the same `100.x` address works everywhere; with B the same `wss://` address.
+- Wi-Fi: the device stores up to **5 networks**, tried in order, so home and work Wi-Fi
+  (or a phone hotspot) can both be saved. No captive-portal (login page) networks.
+- Mac side for A: set the gadget plugin to listen on the Mac's tailnet address (or all
+  interfaces) and add a tailnet rule letting `tag:gadget` reach only TCP 8765 on the Mac.
+- Test plan: Gadget's tailnet checklist in `docs/hardware-validation.md#tailnet`.
+
+### 2. Note taking: quick notes and longer spoken notes
+
+- **Quick voice notes** fit the normal talk turn (Gadget's limit is **30 s**,
+  `kMaxUtteranceMs` in `firmware/core/include/hg/app.hpp`). Hermes (or n8n via a Hermes tool)
+  decides it's a note and files it in Obsidian. No firmware change needed.
+- **Long recordings (up to 1 hour)** need a separate **record mode** in our fork, because
+  normal turns hold the whole utterance in a RAM buffer (1.5 MB for 30 s at 24 kHz). One hour
+  is about 115 MB at 16 kHz, which can't fit in 8 MB of PSRAM. Planned design:
+  1. **Start/stop** from a separate gesture or screen (not hold-to-talk), with a visible
+     timer and a "recording" state on the face.
+  2. **Write to microSD** as it records: one WAV file per session, in chunks, flushed every
+     few seconds so a power loss keeps all but the last moments. (16 kHz mono 16-bit is
+     about 1.9 MB/minute; compression such as Opus can come later.)
+  3. **Upload queue:** a small index file on the card lists finished recordings and how many
+     bytes of each were confirmed by Hermes. When online, upload in the background,
+     resuming from the last confirmed byte after any dropout. Delete from the card only
+     after Hermes confirms, or keep until space runs low.
+  4. **Transport:** extend Gadget's protocol in the fork with a "recording upload" message
+     and binary channel (alongside audio/image/firmware/face), so it reuses the existing
+     pairing and device key. The plugin saves the file on the Mac, then hands it to Hermes
+     or n8n (transcribe, summarise, file to Obsidian). Alternative: HTTP upload straight to
+     an n8n webhook, but that needs a second credential on the device.
+  5. **Doesn't block talking:** record mode is its own state, separate from conversation turns.
+- What Gadget already gives us: a microSD mount (FAT32) used for its log mirror
+  (`port_sdlog.*`, `SdConfig` in `board.hpp`), and Wi-Fi/offline handling.
+- To confirm: the V1 board's microSD pins (from Waveshare's V1 schematic), and that the
+  slot is wired to the S3 (not shared with something else).
 
 ## Single next step
 

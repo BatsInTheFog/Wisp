@@ -43,6 +43,10 @@ venv/
 *.egg-info/
 
 # ---- Secrets and local settings ----
+# Wi-Fi passwords, Hermes address, keys: config/wisp.local.json (template: *.example.json)
+*.local.json
+*.local.*
+!*.example.*
 .env
 .env.*
 !.env.example

@@ -1,0 +1,13 @@
+{
+  "_comment": "Copy to config/wisp.local.json and fill in. That file is git-ignored: never commit it.",
+  "wifi": [
+    { "ssid": "home-network-name", "password": "" },
+    { "ssid": "second-network-name", "password": "" }
+  ],
+  "hermes_url_home": "ws://<mac-home-ip>:8765/gadget",
+  "hermes_url_away": "",
+  "tailscale_auth_key": "",
+  "gadget_access_token": "",
+  "device_name": "Wisp",
+  "serial_port": "COM?"
+}
