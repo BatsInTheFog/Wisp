@@ -43,7 +43,9 @@ about 3 GB more.
 | Git | installed |
 | Python | 3.11 and 3.14 via `uv` (has Tkinter). The `python` command is only the Microsoft Store stub. |
 | Node.js | v24.9.0 |
-| C++ compiler | **Visual Studio Build Tools 2026** (18.11), C++ workload, installed 2026-11-16 at `C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools`. Needed for the Gadget simulator. Installer asked for a **restart**; the compiler test failed before it. (The 2022 package on winget fails with installer error 5008: its bootstrapper is too old.) |
+| C++ compiler | **Visual Studio Build Tools 2026** (18.11), C++ workload, installed 2026-11-16 at `C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools`. Needed for the Gadget simulator. Verified after restart (test program compiles and runs). (The 2022 package on winget fails with installer error 5008: its bootstrapper is too old.) |
+| CMake | 4.4.5, inside the Gadget checkout's `.venv` (from pip) |
+| Hermes Gadget checkout | `$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk` at `2ef17f6` (v0.5.0-127), outside the Wisp repo. Python 3.11 venv in `.venv` with `[dev,audio]` extras |
 | CMake | not installed (can come from pip inside a venv) |
 | ESP-IDF / PlatformIO | **not installed** (needed for firmware) |
 | esptool | not installed |
@@ -60,16 +62,22 @@ pio run -e <wisp-v1-env> -t upload    # FLASHES THE BOARD: ask first
 pio device monitor                    # read the serial log, safe
 ```
 
-Simulator (Hermes Gadget, Windows PowerShell, once a compiler is installed):
+Simulator (Hermes Gadget, PowerShell, from `$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk`):
 
 ```
-hermes-gadget build-sim --test
-hermes-gadget sim --url ws://<mac-ip>:8765/gadget --board sim-368x448 --live-audio
+$env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
+.\.venv\Scripts\hermes-gadget.exe build-sim --test   # after changing firmware/core
+.\.venv\Scripts\hermes-gadget.exe devserver          # demo stand-in for Hermes (port 8765)
+.\.venv\Scripts\hermes-gadget.exe sim --url ws://<mac-ip>:8765/gadget --board sim-368x448 --name "Wisp sim" --live-audio
 ```
 
 ## What works
 
 - Face art, `animation_spec.json`, slicing tools and the browser preview (`preview/wisp-face-lab.html`).
+- Hermes Gadget simulator builds on this PC (core tests pass: 3/3) and completes a headless
+  smoke test against the local demo server on `sim-368x448` (2026-11-16): pairs, sends text,
+  gets the echo reply.
+- Not yet tried: the simulator against the real Hermes on the Mac; live microphone/speaker.
 
 ## Known problems / open questions
 
@@ -87,6 +95,6 @@ hermes-gadget sim --url ws://<mac-ip>:8765/gadget --board sim-368x448 --live-aud
 
 ## Single next step
 
-Restart this PC, confirm the C++ compiler works, then build the Hermes Gadget simulator.
-After that: install the gadget plugin on the Mac's Hermes, run the simulator (`sim-368x448`)
-against it and pair it.
+On the Mac: install the gadget plugin into Hermes and run `hermes gateway setup`, then note
+the device URL from `hermes gadget info`. Then run the simulator on this PC against that URL
+and approve the pairing on the Mac.
