@@ -204,7 +204,7 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
       (`test_sim_window` once errored on a window-timing hiccup, then passed 7/7), simulator
       screenshots show each state. Built (app 1650 KB, 73% free). **Flashed 2026-11-16**
       (firmware `c78812e34c2b4904`): online in 20 s, still paired, `diag` lists
-      `rtc: pcf85063`. Swipe UI not yet tried by the user.
+      `rtc: pcf85063`. **User confirmed all of it works** (bars, conversation view, resting clock).
     - **Time isn't set yet:** Gadget only runs SNTP (pool.ntp.org) while the resting clock
       face is on (`clock` setting, off by default), and the RTC chip starts without a valid
       time. To get time: turn on the clock face (Settings → Clock face, or `set clock 60`)
@@ -350,7 +350,9 @@ Options considered, best first:
 
 ## Single next step
 
-User test on the board (fork `9dd40dd`, flashed): bars hidden on the face screen,
-any swipe shows them for 5 s; swipe left opens the conversation, swipe down/up scrolls it,
-swipe left (or PWR) returns to the face; the RTC (0x51) keeps time. Then: Wisp's face.
-Later: the tailnet, record mode, the `diag` display label.
+**Plan Wisp's face on the device** (before writing code): how the art from `assets/parts`
+gets into the `assets` partition (format, size), how the renderer draws eyes, mouth, warped
+flame and props at 368x448 from `animation_spec.json`, how Gadget's screens map to Wisp's
+states (idle, listening + level-driven mic, thinking, speaking with lip sync, success,
+error, asleep), and the frame-rate budget on the SH8601. The UI will switch to the full
+448-row glass for it. Later: the tailnet, record mode, the `diag` display label.
