@@ -132,6 +132,15 @@ leaving the app task half its time; console answers in ~1 s; lowest internal RAM
 PSRAM 2.4 MB free with the art copy. Accepted as the board's rate for now (user is fine
 with a lower rate). Possible later gains: render on the second core, fewer moving rows.
 
+**User test on the board (2026-11-16):** everything works; animations felt slow and the
+speaking mouth looked poor. Causes and fixes (fork `e1c77f8`, 676 tests pass, built; needs
+an OK to flash): (1) each animation step was clamped to 50 ms as in the preview, so at
+~110 ms a frame everything ran under half speed: now long frames advance in 50 ms sub-steps;
+(2) lip sync now follows the real reply audio: each 20 ms of audio written to the speaker
+gets a loudness and the time it will be heard (after the queue, plus `kLipLatencyMs` = 60,
+to tune by eye); each frame takes the loudest chunk heard since the last frame, scaled to a
+decaying recent peak; closed between bursts.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):
