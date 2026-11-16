@@ -178,12 +178,14 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   - **Reading replies again:** Gadget keeps a finished reply on screen for 20 s, then the
     mascot returns; only boards with Up/Down keys could bring it back. **Fork `980f396`
     adds swipe up** on the touchscreen: the first swipe brings the last reply back, further
-    swipes page through it. Core tests pass (651, incl. a new one); built together with
-    the Wi-Fi fix, **not yet flashed**. Works in the simulator too (`sim-368x448`, drag up)
-    once it's started again.
-  - If stutter remains with a good signal: turn on Opus for spoken replies (about a tenth
-    of the data) by installing libopus on the Mac (`brew install opus`) and restarting the
-    gateway. The board allows 30 s for the check and the
+    swipes page through it. Core tests pass (651, incl. a new one). **Confirmed on the
+    board** (2026-11-16): swipe up after a reply brings it back; during a reply it shows the
+    text scrolling along with the speech; PWR stops speech and the text can still be
+    recalled. Works in the simulator too (`sim-368x448`, drag up) once rebuilt.
+  - If stutter ever returns with a good signal: turn on Opus for spoken replies (about a
+    tenth of the data) by installing libopus on the Mac (`brew install opus`) and
+    restarting the gateway.
+  - Phone Wi-Fi setup tip: the board allows 30 s for "Check connection and save" and the
     phone may drop off the setup network meanwhile (rejoin and reload to see the result).
     Needs a 2.4 GHz network.
   - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
@@ -201,12 +203,13 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     briefly (from the factory-restore procedure). Risks to check on first boot: screen dark or shifted (start-up table),
   touch mirrored, mic gain. See [docs/V1_PORT.md](docs/V1_PORT.md).
 - Gadget's built-in face is 1-bit; Wisp's colour face needs its own renderer.
-- **App space is tight:** the firmware uses 1648 KB of its 1984 KB app slot (17% free), and
-  Gadget's build fails under 10% free. The tailnet adds about 114 KB (→ ~11% free), so record
-  mode and Wisp's face (art!) won't fit as is. The board has 16 MB flash but Gadget's
-  partition table gives each app slot only ~2 MB; plan a **16 MB partition table** for the V1
-  profile (bigger app slots, a data partition for face art) before those features. Changing
-  partitions means a full (USB) flash, not an over-the-air update.
+- **App space (was tight):** the shared table gave each app slot ~2 MB (17% free). Fork
+  `7be3631` gives the V1 board its own 16 MB table
+  (`boards/esp32s3-touch-amoled-18-v1/partitions.csv`): nvs 0x9000 (24 KB), otadata,
+  phy_init at the same addresses as before (settings and pairing survive), **ota_0 / ota_1
+  6 MB each**, coredump 64 KB at 0xc20000, **assets 3.8 MB** (data/spiffs) at 0xc30000.
+  Built: app 1648 KB in a 6144 KB slot, **73% free**; Gadget checks pass (172). **Not yet
+  flashed**: needs a USB flash (an over-the-air update can't change partitions).
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
   Keep the two in step when updating (plugin and firmware/simulator share the protocol).
 
@@ -319,6 +322,6 @@ Options considered, best first:
 
 ## Single next step
 
-Confirm swipe up brings back the last reply and PWR cancels on the board. Then choose the
-next milestone: the 16 MB partition table (needed before Wisp's face or record mode), the
-tailnet (away-from-home), or the RTC / `diag` display-label fixes.
+With the user's OK, USB-flash the 16 MB partition table build (fork `7be3631`) to COM3 and
+check the board comes back online still paired, with `diag` showing the 6 MB slot. Then:
+the tailnet (away-from-home), or the RTC / `diag` display-label fixes.
