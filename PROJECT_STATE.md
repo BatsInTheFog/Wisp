@@ -111,6 +111,11 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     recording buffer, 5 MB PSRAM free. I2C answers: 0x18 ES8311, 0x20 TCA9554, 0x34
     AXP2101, 0x51 PCF85063 RTC, 0x6b QMI8658 IMU. **0x38 (FT3168 touch) not in the scan**:
     possibly just dozing (Gadget notes the 2.06's FT3168 does this); confirm with a swipe.
+  - Phone Wi-Fi setup ("Check connection and save") saved nothing on the first try
+    (2026-11-16). Hermes address and name "Wisp" were then set over USB (`set server`,
+    `set name`); Wi-Fi still to be entered. The board allows 30 s for the check and the
+    phone may drop off the setup network meanwhile (rejoin and reload to see the result).
+    Needs a 2.4 GHz network.
   - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
   - Later: turn on the RTC (`b.rtc.enabled`, as the 2.06) and maybe the IMU.
   - Reading the console: `console.py`-style script (open COM3 with DTR/RTS low, send
