@@ -113,7 +113,11 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     possibly just dozing (Gadget notes the 2.06's FT3168 does this); confirm with a swipe.
   - Phone Wi-Fi setup ("Check connection and save") saved nothing on the first try
     (2026-11-16). Hermes address and name "Wisp" were then set over USB (`set server`,
-    `set name`); Wi-Fi still to be entered. The board allows 30 s for the check and the
+    `set name`). Wi-Fi then set over USB with `hermes-gadget provision` (user ran it): the
+    board finds the network (signal -48 dBm, strong) but keeps failing with **reason 15,
+    "4-way handshake timeout"**, which almost always means the password doesn't match.
+    In PowerShell, use single quotes around the password (`$` and backtick are special
+    inside double quotes). Other possibility: router set to WPA3-only. The board allows 30 s for the check and the
     phone may drop off the setup network meanwhile (rejoin and reload to see the result).
     Needs a 2.4 GHz network.
   - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
