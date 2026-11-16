@@ -45,7 +45,7 @@ about 3 GB more.
 | Node.js | v24.9.0 |
 | C++ compiler | **Visual Studio Build Tools 2026** (18.11), C++ workload, installed 2026-11-16 at `C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools`. Needed for the Gadget simulator. Verified after restart (test program compiles and runs). (The 2022 package on winget fails with installer error 5008: its bootstrapper is too old.) |
 | CMake | 4.4.5, inside the Gadget checkout's `.venv` (from pip) |
-| Hermes Gadget checkout | `$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk` at `2ef17f6` (v0.5.0-127), outside the Wisp repo. Python 3.11 venv in `.venv` with `[dev,audio]` extras |
+| Hermes Gadget checkout | `$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk`, outside the Wisp repo. Remotes: `origin` = fork `BatsInTheFog/hermes-gadget-sdk`, `upstream` = Adolanium's original (pushing to it is disabled). Work branch **`wisp`** (based on upstream `2ef17f6`, v0.5.0-127). Python 3.11 venv in `.venv` with `[dev,audio]` extras |
 | CMake | not installed (can come from pip inside a venv) |
 | ESP-IDF / PlatformIO | **not installed** (needed for firmware) |
 | esptool | not installed |
@@ -53,13 +53,13 @@ about 3 GB more.
 
 ## Build and flash commands
 
-Not set up yet. Planned (Hermes Gadget firmware, PlatformIO):
+PlatformIO not installed yet. Planned, from the Gadget checkout's `firmware/esp32` folder on
+the `wisp` branch:
 
 ```
-cd firmware/esp32
-pio run -e <wisp-v1-env>              # build only, safe
-pio run -e <wisp-v1-env> -t upload    # FLASHES THE BOARD: ask first
-pio device monitor                    # read the serial log, safe
+pio run -e esp32s3-touch-amoled-18-v1              # build only, safe
+pio run -e esp32s3-touch-amoled-18-v1 -t upload    # FLASHES THE BOARD: ask first
+pio device monitor                                 # read the serial log, safe
 ```
 
 Simulator (Hermes Gadget, PowerShell, from `$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk`):
@@ -86,8 +86,12 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 
 ## Known problems / open questions
 
-- Hermes Gadget officially supports only the **V2** 1.8" board. V1 needs a small board profile
-  (different display and touch chips). See [docs/V1_PORT.md](docs/V1_PORT.md).
+- Hermes Gadget officially supports only the **V2** 1.8" board. Our **V1 profile is written**
+  on the fork's `wisp` branch (commit `f66e85f`): board option `esp32s3-touch-amoled-18-v1`,
+  SH8601 driven through Gadget's AMOLED code with xiaozhi's V1 table, FT3168 touch at 0x38 /
+  INT 21. Gadget's firmware/docs tests pass (176). **Not yet compiled for the ESP32 and not
+  run on the board.** Risks to check on first boot: screen dark or shifted (start-up table),
+  touch mirrored, mic gain. See [docs/V1_PORT.md](docs/V1_PORT.md).
 - Gadget's built-in face is 1-bit; Wisp's colour face needs its own renderer.
 - No ESP toolchain on this PC yet (the C++ compiler for the simulator is installed).
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
@@ -106,13 +110,14 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 
 ## Two repositories, and where secrets live
 
-- **Fork:** `BatsInTheFog/hermes-gadget-sdk` (planned), a copy of Adolanium's Hermes Gadget
+- **Fork:** `BatsInTheFog/hermes-gadget-sdk` (created 2026-11-16), a copy of Adolanium's Hermes Gadget
   on GitHub. Forks of public repos are **public**. It holds only board code: the V1 profile,
   later the long-recording mode and Wisp's face renderer. Work goes on a `wisp` branch so
   upstream updates can be pulled into `main` and merged across.
 - **Wisp (this repo, private):** art, face spec, tools, docs, project state. It will point to
-  one exact commit of the fork (a git submodule at `firmware/hermes-gadget`), so a Wisp commit
-  always says which firmware it goes with.
+  one exact commit of the fork (a git submodule at `firmware/hermes-gadget`, to add once the
+  firmware runs on the board), so a Wisp commit always says which firmware it goes with.
+  Until then, PROJECT_STATE.md records the fork commit.
 - **Secrets never go in either repo:** Wi-Fi password, Hermes address, pairing data, device
   keys, Tailscale keys. They live in `config/wisp.local.json` on this PC (git-ignored; template
   in `config/wisp.local.example.json`) and, once set, in the board's flash. The simulator's
@@ -201,7 +206,6 @@ Options considered, best first:
 
 ## Single next step
 
-Fork Hermes Gadget on GitHub and add a **V1 board profile** (SH8601 display + FT3168 touch,
-values in [docs/V1_PORT.md](docs/V1_PORT.md)), then build it with no flashing. Before the
-first flash: install the ESP toolchain, take a full flash backup of the factory firmware, and
-ask.
+Install PlatformIO on this PC (about 3 GB, ask first) and **build** the V1 firmware
+(`pio run -e esp32s3-touch-amoled-18-v1`), no flashing. Then, each with a separate OK: back up
+the board's full factory flash to a file, and flash the V1 firmware.
