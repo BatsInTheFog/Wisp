@@ -93,6 +93,21 @@ forces a state for testing (`face auto` to return). Checked: all 13 states rende
 simulator (contact sheet), the idle face moves between frames, 7 new tests (670 pass).
 Open for step 4: the listening mic sits at the bottom (micY 440) where the two text lines go.
 
+**Step 4 done (2026-11-16, fork `2b74467`):** the app picks the face per screen: Ready idle
+(happy 2.5 s after an answer, showing the reply's last two lines; sad 4 s after a failure),
+listening with the real mic level, thinking or research (Hermes's status mentions search/web/
+browse/look), speaking while the reply plays, asleep on the resting clock; other screens keep
+the mascot. With the face, a finished reply no longer fills the screen for 20 s (swipe up
+for the text). User's prop request: browser, quill and mic stand just above the two text
+lines, the mic on the right like the browser. Resting clock: Wisp asleep at 62% in the top
+half, time and date in the bottom half, battery icon + percentage in a bottom strip the
+bar's height (user request; board setting `battery_display both`). 5 new app tests (675
+pass); a spoken turn in the simulator went idle → listening → thinking → speaking → happy
+→ idle → asleep with the clock. **Not done:** lip sync uses the preview's made-up
+syllables while audio plays, not the real loudness (to add in step 5 if it reads poorly);
+the `wisp.mood` action for Hermes (later); the percentage is the AXP2101's own gauge, with
+no fitted curve for this battery yet, so it may read a little off.
+
 ### 2-3. Draw and animate (`FaceRenderer` in the firmware core)
 
 A new part of Gadget's portable core (so the simulator runs exactly the same code):

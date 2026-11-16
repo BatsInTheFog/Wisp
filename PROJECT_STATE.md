@@ -358,16 +358,17 @@ draws Wisp's still idle face in the simulator, matching the browser preview (det
 the plan; fork `8b79f5d`; board firmware builds, 1662 KB). To see it: `$env:HG_WISP_FACE = "$env:USERPROFILE\Documents\GitHub\Wisp\build\wisp_face.bin"`
 before `hermes-gadget sim --board sim-368x448 ...`. **Step 3 done:** the face animates like
 the preview (all 13 states; fork `2592253`; 670 core tests pass; board firmware builds,
-1675 KB). Try a state with the console: `face thinking`, `face auto`. **Next: step 4**,
-connect the states to what Wisp is doing (listening with the real mic level, thinking,
-research, speaking with lip sync from the played audio, success, sad, asleep), Wisp asleep
-with the time as the resting clock, and the two text lines near the bottom (mind the mic).
+1675 KB). Try a state with the console: `face thinking`, `face auto`. **Step 4 done:** the face
+follows what Wisp is doing; resting clock = Wisp asleep + time + battery (fork `2b74467`,
+675 tests, board firmware 1677 KB; details and what's not done in the plan). **Next: step 5**,
+the board: map the `assets` partition, write `wisp_face.bin` to it over USB (0xC30000),
+switch the V1 UI to the full 448 rows, flash (with OK), then measure frame rate and memory.
 Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
 Waveshare's V1 schematic), the `diag` label.
 
 Device settings made 2026-11-16 (in the board's flash, not in code): `screen_timeout` 210 s
 (dims at ~105 s, dark 60 s after the resting clock appears at 150 s), `clock` 150,
-`time_format` 12h, `timezone` Chicago, `volume` 80, `name` Wisp.
+`time_format` 12h, `timezone` Chicago, `volume` 80, `name` Wisp, `battery_display` both.
 
 Build gotcha: after adding a new source file to the fork's core, delete
 `firmware\esp32\.pio\build\esp32s3-touch-amoled-18-v1\CMakeCache.txt` before `pio run`, or
