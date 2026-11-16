@@ -202,7 +202,14 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     - RTC turned on (`b.rtc.enabled`, PCF85063 at 0x51). IMU still unused.
     - Checks: 656 core tests pass (5 new), Gadget firmware/docs/sim tests pass
       (`test_sim_window` once errored on a window-timing hiccup, then passed 7/7), simulator
-      screenshots show each state. Built (app 1650 KB, 73% free). **Not yet flashed.**
+      screenshots show each state. Built (app 1650 KB, 73% free). **Flashed 2026-11-16**
+      (firmware `c78812e34c2b4904`): online in 20 s, still paired, `diag` lists
+      `rtc: pcf85063`. Swipe UI not yet tried by the user.
+    - **Time isn't set yet:** Gadget only runs SNTP (pool.ntp.org) while the resting clock
+      face is on (`clock` setting, off by default), and the RTC chip starts without a valid
+      time. To get time: turn on the clock face (Settings → Clock face, or `set clock 60`)
+      and set the time zone (`set timezone <POSIX TZ>`, default `UTC0`); optionally
+      `set time_format 12h`. Waiting on the user's time zone and clock preference.
     - Labels are English-only literals for now ("Conversation", "You", "Swipe left for the
       face"), not in Gadget's translation tables.
   - Reading the console: `console.py`-style script (open COM3 with DTR/RTS low, send
