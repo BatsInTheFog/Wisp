@@ -19,7 +19,16 @@ _Last updated: 2026-11-16 (session 1, decisions on remote access and recordings)
 - File: `ESP32-S3-Touch-AMOLED-1.8-FactoryXiaozhi_250805.bin` (not in this repo; `*.bin` is ignored)
 - Flash at address `0x0` with the Espressif Flash Download Tool.
 - After flashing: with USB plugged in, hold PWR 6 seconds, then press it again briefly.
-- TODO: confirm where the .bin lives on this computer, and take a full flash backup before the first flash.
+- **Full flash backup taken 2026-11-16** (verified against the board, digest matched):
+  `(a private backups folder outside the repo)`, outside
+  the repo, with a README holding its SHA-256, partition table and the restore command.
+  It contains the board's settings storage, so it stays private. Restoring it puts the board
+  back exactly as it was, so the downloadable factory .bin is only a second fallback.
+- Board on this PC: **COM3** (USB Serial/JTAG, VID:PID 303A:1001),
+  chip ESP32-S3 rev v0.2, flash 16 MB (quad), PSRAM 8 MB.
+- Factory partition layout: nvs, otadata, phy_init, `model` (952 KB), `factory` app
+  (4.2 MB), `ota_0` app (6 MB), `storage` (4.8 MB). Gadget's layout is different, so the
+  first Gadget flash must be a full USB flash (bootloader + partition table + app).
 
 ## Machines
 
@@ -214,6 +223,6 @@ Options considered, best first:
 
 ## Single next step
 
-Connect the board by USB and **back up its full 16 MB factory flash** to a file on this PC
-(read-only, ask first; the file stays out of git). Then, with a separate OK, flash the V1
-firmware and run the first-boot checklist in the fork's `docs/hardware.md`.
+With the user's OK, **flash the V1 firmware** over USB (COM3,
+`pio run -e esp32s3-touch-amoled-18-v1 -t upload`), then watch the serial log and run the
+first-boot checklist in the fork's `docs/hardware.md`.
