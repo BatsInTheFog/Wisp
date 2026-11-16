@@ -102,7 +102,28 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   INT 21. Gadget's firmware/docs tests pass (176). **Compiles for the ESP32** (2026-11-16,
   first build 32 min incl. toolchain download): output in
   `firmware\esp32\.pio\build\esp32s3-touch-amoled-18-v1\` (`firmware.bin` 1.65 MB).
-  **Not yet run on the board.** Risks to check on first boot: screen dark or shifted (start-up table),
+  **Flashed to the board 2026-11-16** over COM3 (bootloader, partition table, OTA data and
+  app all written and hash-verified).
+  - **Boots and draws correctly** (2026-11-16): shows Gadget's Wi-Fi setup screen with QR
+    code, upright, not mirrored, no edge stripe; colours right (red status dot is red).
+  - Console (`status`, `diag` over COM3): board `esp32s3-touch-amoled-1.8-v1`, firmware
+    0.5.0 (IDF 6.1.0), battery 74% / 3970 mV charging on USB, PWR key found, 1.49 MB
+    recording buffer, 5 MB PSRAM free. I2C answers: 0x18 ES8311, 0x20 TCA9554, 0x34
+    AXP2101, 0x51 PCF85063 RTC, 0x6b QMI8658 IMU. **0x38 (FT3168 touch) not in the scan**:
+    possibly just dozing (Gadget notes the 2.06's FT3168 does this); confirm with a swipe.
+  - Cosmetic: `diag` reports `display co5300` for the SH8601 (hard-coded label); fix later.
+  - Later: turn on the RTC (`b.rtc.enabled`, as the 2.06) and maybe the IMU.
+  - Reading the console: `console.py`-style script (open COM3 with DTR/RTS low, send
+    `status` / `diag`); resetting via RTS and reading the boot log returned nothing.
+  - The UI is 368x432 on the 368x448 glass on purpose (as Gadget's V2 profile): the panel
+    window covers all 448 rows, the top and bottom 8 rows stay black, and the UI keeps clear
+    of the rounded corners. Wisp's face renderer will want the full glass: then set
+    `amoled.height = 448`, `gap_y = 0`, `touch.offset_y = 0`.
+  - The flash wrote only Gadget's own regions; old xiaozhi data elsewhere on the chip
+    (e.g. its settings and model areas) was not erased. If settings act strangely, an NVS
+    erase is the fix (ask first).
+  - If the screen stays dark: with USB plugged in, hold PWR 6 seconds, then press it again
+    briefly (from the factory-restore procedure). Risks to check on first boot: screen dark or shifted (start-up table),
   touch mirrored, mic gain. See [docs/V1_PORT.md](docs/V1_PORT.md).
 - Gadget's built-in face is 1-bit; Wisp's colour face needs its own renderer.
 - **App space is tight:** the firmware uses 1648 KB of its 1984 KB app slot (17% free), and
@@ -223,6 +244,5 @@ Options considered, best first:
 
 ## Single next step
 
-With the user's OK, **flash the V1 firmware** over USB (COM3,
-`pio run -e esp32s3-touch-amoled-18-v1 -t upload`), then watch the serial log and run the
-first-boot checklist in the fork's `docs/hardware.md`.
+Finish the first-boot checklist: touch (swipe down), then Wi-Fi + Hermes address via the
+phone setup page, pairing (`hermes gadget pair` on the Mac), mic, speaker.
