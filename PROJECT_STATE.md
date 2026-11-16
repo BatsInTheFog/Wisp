@@ -1,6 +1,6 @@
 # Wisp: project state
 
-_Last updated: 2026-11-15 (session 1)_
+_Last updated: 2026-11-16 (session 1)_
 
 ## Hardware (confirmed from the board's label)
 
@@ -30,8 +30,11 @@ _Last updated: 2026-11-15 (session 1)_
 | LLM | A separate machine | Hermes calls it |
 | Later | n8n, Obsidian | For future features |
 
-Note: this Windows PC **also** has a Hermes install (`%LOCALAPPDATA%\hermes`) with a gateway
-running. The plan uses the Mac one unless we decide otherwise.
+Note: the Hermes install on this Windows PC (`%LOCALAPPDATA%\hermes`) is only a remote
+client that connects to the Mac. The real Hermes (and the gadget plugin) lives on the Mac.
+
+Disk: about 21 GB free on C: after the Build Tools (2026-11-16). The ESP toolchain needs
+about 3 GB more.
 
 ## Toolchain
 
@@ -40,7 +43,7 @@ running. The plan uses the Mac one unless we decide otherwise.
 | Git | installed |
 | Python | 3.11 and 3.14 via `uv` (has Tkinter). The `python` command is only the Microsoft Store stub. |
 | Node.js | v24.9.0 |
-| C++ compiler (Visual Studio Build Tools) | **not installed** (needed for the Gadget simulator) |
+| C++ compiler | **Visual Studio Build Tools 2026** (18.11), C++ workload, installed 2026-11-16 at `C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools`. Needed for the Gadget simulator. Installer asked for a **restart**; the compiler test failed before it. (The 2022 package on winget fails with installer error 5008: its bootstrapper is too old.) |
 | CMake | not installed (can come from pip inside a venv) |
 | ESP-IDF / PlatformIO | **not installed** (needed for firmware) |
 | esptool | not installed |
@@ -84,5 +87,6 @@ hermes-gadget sim --url ws://<mac-ip>:8765/gadget --board sim-368x448 --live-aud
 
 ## Single next step
 
-Get the Hermes Gadget desktop simulator connected to Hermes: install the gadget plugin on the
-Mac's Hermes, then build and run the simulator (`sim-368x448`) and pair it.
+Restart this PC, confirm the C++ compiler works, then build the Hermes Gadget simulator.
+After that: install the gadget plugin on the Mac's Hermes, run the simulator (`sim-368x448`)
+against it and pair it.
