@@ -1,6 +1,6 @@
 # Wisp: project state
 
-_Last updated: 2026-11-16 (session 1)_
+_Last updated: 2026-11-16 (session 1, decisions on remote access and recordings)_
 
 ## Hardware (confirmed from the board's label)
 
@@ -26,7 +26,7 @@ _Last updated: 2026-11-16 (session 1)_
 | Role | Machine | Notes |
 | --- | --- | --- |
 | **Build machine** | This Windows 11 PC (`$env:USERPROFILE\Documents\GitHub\Wisp`) | Builds firmware, flashes the board over USB |
-| Hermes Agent | Mac (`~/.hermes/hermes-agent`), v0.22.6 | Also runs speech-to-text and text-to-speech |
+| Hermes Agent | Mac (`~/.hermes/hermes-agent`), v0.22.6 | Also runs speech-to-text and text-to-speech. Static IP on the home network (in `config/wisp.local.json`). Already on the user's tailnet. |
 | LLM | A separate machine | Hermes calls it |
 | Later | n8n, Obsidian | For future features |
 
@@ -92,7 +92,6 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
 - No ESP toolchain on this PC yet (the C++ compiler for the simulator is installed).
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
   Keep the two in step when updating (plugin and firmware/simulator share the protocol).
-- The Mac's home-network address could change; a DHCP reservation on the router would pin it.
 
 ## Decisions
 
@@ -118,14 +117,30 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   keys, Tailscale keys. They live in `config/wisp.local.json` on this PC (git-ignored; template
   in `config/wisp.local.example.json`) and, once set, in the board's flash. The simulator's
   identity lives in `%USERPROFILE%\.hermes-gadget\`, outside both repos.
-- Note: earlier Wisp commits mention the Mac's home-network address (192.168.x.x). It is only
-  reachable inside the home network and this repo is private, so the history was left as is.
+- Note: earlier Wisp commits mention the Mac's home-network address (192.168.x.x). Decision
+  (2026-11-16): leave that history as is (home-network only, private repo).
 
 ## Future requirements (planned, not built)
 
 ### 1. Away-from-home access (e.g. at work)
 
-Hermes is only on the home network now. Options for the board, best first:
+**Decision (2026-11-16): option A, the board joins the tailnet via TailTiny. Funnel (B) is the
+fallback.** The Mac is already on the tailnet (the laptop reaches Hermes that way).
+
+**Order:** V1 board working on home Wi-Fi with stock Gadget first, then turn on the tailnet.
+
+**When we get there, walk through (user does the admin-console steps):**
+1. Tailnet policy: add `tag:wisp` under `tagOwners`, and a grant letting only `tag:wisp`
+   reach `tcp:8765` on the Mac's `100.x` address (nothing else on the tailnet).
+2. Auth key: Settings → Keys → one-off (not reusable), not ephemeral, pre-approved, tagged
+   `tag:wisp`. Store it only in `config/wisp.local.json`, then on the board (`set ts_key`).
+3. Key expiry: tagged devices have node-key expiry off by default; confirm in Machines →
+   the board → "Disable key expiry" if it shows as expiring.
+4. Mac: gadget plugin listens on the tailnet address too (`platforms.gadget.extra.host`),
+   restart the gateway; board's `server` = `ws://<mac 100.x>:8765/gadget`.
+5. Run Gadget's tailnet checklist (`docs/hardware-validation.md#tailnet`).
+
+Options considered, best first:
 
 | Option | How the ESP32 connects | Hermes exposed to the internet? | Status in Gadget |
 | --- | --- | --- | --- |
@@ -138,8 +153,6 @@ Hermes is only on the home network now. Options for the board, best first:
   rebuild: with A the same `100.x` address works everywhere; with B the same `wss://` address.
 - Wi-Fi: the device stores up to **5 networks**, tried in order, so home and work Wi-Fi
   (or a phone hotspot) can both be saved. No captive-portal (login page) networks.
-- Mac side for A: set the gadget plugin to listen on the Mac's tailnet address (or all
-  interfaces) and add a tailnet rule letting `tag:gadget` reach only TCP 8765 on the Mac.
 - Test plan: Gadget's tailnet checklist in `docs/hardware-validation.md#tailnet`.
 
 ### 2. Note taking: quick notes and longer spoken notes
@@ -147,7 +160,11 @@ Hermes is only on the home network now. Options for the board, best first:
 - **Quick voice notes** fit the normal talk turn (Gadget's limit is **30 s**,
   `kMaxUtteranceMs` in `firmware/core/include/hg/app.hpp`). Hermes (or n8n via a Hermes tool)
   decides it's a note and files it in Obsidian. No firmware change needed.
-- **Long recordings (up to 1 hour)** need a separate **record mode** in our fork, because
+- **Card:** 32 GB microSD (FAT32). Recordings **regularly run 15 minutes or longer**, up to an
+  hour. At 16 kHz mono 16-bit: 15 min ≈ 29 MB, 1 h ≈ 115 MB; the card holds about 270 hours,
+  and FAT32's 4 GB file limit is far away. Record mode is designed for 15-60 min as the
+  normal case, not an edge case.
+- **Long recordings** need a separate **record mode** in our fork, because
   normal turns hold the whole utterance in a RAM buffer (1.5 MB for 30 s at 24 kHz). One hour
   is about 115 MB at 16 kHz, which can't fit in 8 MB of PSRAM. Planned design:
   1. **Start/stop** from a separate gesture or screen (not hold-to-talk), with a visible
@@ -165,6 +182,18 @@ Hermes is only on the home network now. Options for the board, best first:
      or n8n (transcribe, summarise, file to Obsidian). Alternative: HTTP upload straight to
      an n8n webhook, but that needs a second credential on the device.
   5. **Doesn't block talking:** record mode is its own state, separate from conversation turns.
+  6. **Power during long sessions:** the screen shows an elapsed timer, kept mostly black
+     (AMOLED black pixels are off) and dimmed after a while; Wi-Fi can stay off or idle while
+     recording and upload afterwards. Warn on screen, and close the file cleanly, if the
+     battery gets low or the card is nearly full.
+- **Checks when record mode is built:**
+  - Record 60 min on battery with the timer on screen; log battery % / mV every minute
+    (Gadget has a battery log) and note minutes per 10% drop. Repeat with Wi-Fi off during
+    recording, and with the screen dimmed, to see what each saves.
+  - Pull power mid-recording: the file up to the last flush must survive and upload.
+  - Drop Wi-Fi mid-upload: upload resumes from the last confirmed byte.
+  - A 15-min recording uploads and reaches Hermes/n8n intact (duration matches).
+- Gadget's 30 s limit (`kMaxUtteranceMs`) stays for normal turns; record mode doesn't change it.
 - What Gadget already gives us: a microSD mount (FAT32) used for its log mirror
   (`port_sdlog.*`, `SdConfig` in `board.hpp`), and Wi-Fi/offline handling.
 - To confirm: the V1 board's microSD pins (from Waveshare's V1 schematic), and that the
