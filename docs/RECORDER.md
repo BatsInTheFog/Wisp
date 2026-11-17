@@ -1,0 +1,81 @@
+# Voice recorder
+
+Wisp records long sessions (longer spoken notes, a few minutes to an hour) to the microSD card and uploads them to a
+Nextcloud File drop share, where an n8n workflow transcribes, summarises and files them. Built in
+three phases; the user tests each on the device before the next.
+
+| Phase | What | State |
+|---|---|---|
+| 1 | Record to SD, the recording screen | Built, not yet flashed (fork branch `wisp`) |
+| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot), pause polish | Not started |
+| 3 | Upload queue to Nextcloud | Not started |
+
+## How it behaves (Phase 1)
+
+- **Open:** press BOOT three times quickly (each within 0.4 s of the last). Recording starts at
+  once. The first press acts as usual (it starts talking for a moment), the second goes home,
+  the third opens the recorder, so single presses get **no added delay**. From a dark screen
+  the first press only wakes her, so it takes four.
+- **Screen** (replaces the face): red ● REC and the timer (mm:ss, h:mm:ss after an hour) at
+  the top; the mic art in the middle, frame 1 (quiet) to 5 (loud) by level; Pause and Stop at
+  the bottom.
+  - **Pause:** a tap. Shows frame 1 dimmed to 40%, PAUSED in amber, and a blinking timer.
+    Resume continues the same file. The timer counts recorded time only.
+  - **Stop:** hold for one second while a red ring fills. Letting go early, or sliding off,
+    keeps recording.
+  - After Stop: "Saving...", then "Saved" with the file name for 2 s, then the face. A tap or
+    a key press on "Saved" goes back at once.
+- **While open:** BOOT and PWR only brighten the screen; hold-to-talk and taps don't talk
+  (the mic is busy); the idle ladder never sleeps her; after 30 s untouched the screen dims,
+  and the touch that brightens it does nothing else. At 5% battery (on battery) she stops and
+  saves on her own.
+- **Mic level → art:** RMS of each 50 ms block in dBFS, −50 dB → frame 1 and −15 dB → frame 5
+  (`RecLevel::kQuietDb`, `kLoudDb` in the fork's `core/include/hg/recorder.hpp`). Rises at
+  once, falls over ~300 ms (`kReleaseMs`).
+- **Files:** `/recordings/wisp_YYYYMMDD_HHMMSS.wav`, the local start time. 16 kHz, 16-bit,
+  mono WAV (~115 MB an hour). If the clock was never set: `wisp_unsynced_0001.wav` and up.
+  Network time now syncs whenever Wi-Fi is up (it used to only with the clock face on) and
+  keeps the PCF85063 set. The timezone is the board's `timezone` setting.
+
+## How it works
+
+- The ES8311 microphone runs at 24 kHz (it shares the clock with the speaker). The mic task
+  hands every chunk straight to the recorder before the app's event queue. The recorder
+  converts to 16 kHz (low-pass filter, then 3 → 2 samples) into a 1 MB ring buffer in PSRAM
+  (~32 s). Its own task ("hg-rec") writes 8 KB blocks to the card. A slow card write is
+  absorbed by the ring, not dropped; `rec` reports `dropped` (should stay 0) and the ring's
+  peak fill.
+- The app keeps the screen. The mic art is packed into `wisp_face.bin` with the face:
+  `tools/prep_recorder.py` scales `assets/recorder/rec_mic_*.png` (368×488) to 226×300 into
+  `assets/parts/`, and `tools/pack_face.py` adds them under the manifest's `recorder` key.
+  The file grew from 2.34 MB to 2.59 MB (the assets partition holds 3.9 MB).
+- **Console** (USB): `rec` shows state, seconds, the level now and its peak (`db`,
+  `peak_db`: for tuning the gain), `dropped`, `ring_peak_pct` and the file. Also
+  `rec start`, `rec pause`, `rec resume`, `rec stop`, `rec level reset`.
+
+## Decisions
+
+- **SD stays in SD mode (SDMMC 1-bit), not SPI** (2026-11-17, the user agreed). Same pins;
+  already tested at 1.82 MB/s writing, 57× what recording needs.
+- **Upload over Cloudflare has a 100 MB limit.** The Nextcloud server is behind Cloudflare
+  (Nextcloud 35.0.3), which rejects request bodies over 100 MB on its standard plans: about
+  52 minutes of audio in one PUT. The user is fine with uploading straight into Nextcloud
+  instead. Decide in Phase 3, after a 60 MB and a 120 MB test upload from the PC. The options:
+  - upload over the tailnet to Nextcloud directly, skipping Cloudflare (if Nextcloud is on
+    the tailnet);
+  - split long recordings into parts;
+  - raise the limit, if the Cloudflare plan allows.
+- The share token and password live only in `config/wisp.local.json` (git-ignored), under
+  `nextcloud`. Nextcloud 35 may not keep the old `public.php/webdav/` address; the upload
+  address is a setting there, and the Phase 3 test tries both forms.
+
+## Phase 1 tests on the device
+
+1. Flash the firmware and the new `wisp_face.bin`, and set the timezone (`set timezone
+   CST6CDT,M3.2.0,M11.1.0`).
+2. Triple-press BOOT: the recorder opens and the timer runs.
+3. Talk across a table; check `rec`: `peak_db` around −25 to −20 dB is mid-scale. Tune the
+   gain if not.
+4. Pause and resume; hold Stop; check the file with `sd ls /sdcard/recordings`.
+5. Record 5+ minutes; `dropped` must be 0.
+6. Copy the WAV off the card and play it.

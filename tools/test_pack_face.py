@@ -20,8 +20,10 @@ ROOT = Path(__file__).resolve().parent.parent
 def test_real_art_round_trips_pixel_exact(tmp_path):
     out = tmp_path / "wisp_face.bin"
     stats = pack_face.pack(ROOT / "assets/parts", ROOT / "animation_spec.json", out)
-    assert stats["parts"] == len(pack_face.manifest_files(
-        json.loads((ROOT / "assets/parts/manifest.json").read_text(encoding="utf-8"))))
+    manifest = pack_face.load_manifest(ROOT / "assets/parts")
+    assert stats["parts"] == len(pack_face.manifest_files(manifest))
+    # The recorder's five mic frames ride along (tools/prep_recorder.py).
+    assert [m["file"] for m in manifest["recorder"]["mic"]] == [f"rec_mic_{i}.png" for i in range(1, 6)]
     assert pack_face.check(ROOT / "assets/parts", out) == 0
     meta, _ = pack_face.read(out)
     assert meta["spec"] == json.loads((ROOT / "animation_spec.json").read_text(encoding="utf-8"))

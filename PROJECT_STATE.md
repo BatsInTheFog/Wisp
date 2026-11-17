@@ -370,6 +370,15 @@ Options considered, best first:
 
 ## Single next step
 
+**Voice recorder, Phase 1 built, not yet flashed** ([docs/RECORDER.md](docs/RECORDER.md)): a
+triple BOOT press records 16 kHz mono WAV to `/recordings/` on the microSD card, with the
+full-screen timer, mic art, Pause and hold-to-Stop. 706 core tests pass; the board firmware
+builds (1826 KB). Next: the user approves flashing the firmware plus the new `wisp_face.bin`
+(mic art) and setting the timezone, then tests on the device. Phases 2 (crash safety) and 3
+(Nextcloud upload; Cloudflare's 100 MB limit is open) follow.
+
+Earlier:
+
 Face work ([docs/FACE_DEVICE_PLAN.md](docs/FACE_DEVICE_PLAN.md); the user's four choices are
 recorded there). **Step 1 done:** `tools/pack_face.py` builds `build/wisp_face.bin` (2.24 MB,
 133 parts, pixel-exact; format in [docs/FACE_FORMAT.md](docs/FACE_FORMAT.md); tests in

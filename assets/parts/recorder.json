@@ -1,0 +1,34 @@
+{
+ "_comment": "Written by tools/prep_recorder.py. The mic art, quiet (1) to loud (5).",
+ "mic": [
+  {
+   "file": "rec_mic_1.png",
+   "w": 226,
+   "h": 300
+  },
+  {
+   "file": "rec_mic_2.png",
+   "w": 226,
+   "h": 300
+  },
+  {
+   "file": "rec_mic_3.png",
+   "w": 226,
+   "h": 300
+  },
+  {
+   "file": "rec_mic_4.png",
+   "w": 226,
+   "h": 300
+  },
+  {
+   "file": "rec_mic_5.png",
+   "w": 226,
+   "h": 300
+  }
+ ],
+ "box": [
+  71,
+  66
+ ]
+}

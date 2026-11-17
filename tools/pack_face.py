@@ -3,7 +3,8 @@
     python tools/pack_face.py pack  [--parts assets/parts] [--spec animation_spec.json] [--out build/wisp_face.bin]
     python tools/pack_face.py check [--parts assets/parts] [--file build/wisp_face.bin]
 
-`pack` reads every part listed in assets/parts/manifest.json, converts it to 16-bit colour
+`pack` reads every part listed in assets/parts/manifest.json (plus the recorder's mic art from
+assets/parts/recorder.json, written by tools/prep_recorder.py), converts it to 16-bit colour
 (RGB565) and stores only its lit pixels, row by row, with the manifest and animation_spec.json
 embedded as JSON. `check` reads the file back and compares every part, pixel for pixel, with
 the PNG it came from. The format is described in docs/FACE_FORMAT.md.
@@ -108,8 +109,20 @@ def pad4(n: int) -> int:
     return (n + 3) & ~3
 
 
-def pack(parts_dir: Path, spec_path: Path, out: Path) -> dict:
+def load_manifest(parts_dir: Path) -> dict:
+    """manifest.json (tools/slice.py's), with the recorder's art from recorder.json
+    (tools/prep_recorder.py's) under "recorder" when that file is there."""
     manifest = json.loads((parts_dir / "manifest.json").read_text(encoding="utf-8"))
+    rec = parts_dir / "recorder.json"
+    if rec.exists():
+        info = json.loads(rec.read_text(encoding="utf-8"))
+        info.pop("_comment", None)
+        manifest["recorder"] = info
+    return manifest
+
+
+def pack(parts_dir: Path, spec_path: Path, out: Path) -> dict:
+    manifest = load_manifest(parts_dir)
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     screen_w, screen_h = manifest["screen"]
     files = manifest_files(manifest)
@@ -179,7 +192,7 @@ def read(path: Path) -> tuple[dict, dict[str, np.ndarray]]:
 
 
 def check(parts_dir: Path, path: Path) -> int:
-    manifest = json.loads((parts_dir / "manifest.json").read_text(encoding="utf-8"))
+    manifest = load_manifest(parts_dir)
     meta, parts = read(path)
     bad = 0
     files = manifest_files(manifest)
