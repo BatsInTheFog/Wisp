@@ -361,9 +361,18 @@ the preview (all 13 states; fork `2592253`; 670 core tests pass; board firmware 
 1675 KB). Try a state with the console: `face thinking`, `face auto`. **Step 4 done:** the face
 follows what Wisp is doing; resting clock = Wisp asleep + time + battery (fork `2b74467`,
 675 tests, board firmware 1677 KB; details and what's not done in the plan). **Step 5:** the face runs on the board (art in the `assets` partition, copied to PSRAM; full
-448 rows; ~9 fps steady; fork `e2ae49b`). **Performance (2026-11-16):** now 17.5 fps idle, 16.3 face frames/s while speaking
-(7.1 full + 9.2 mouth), with the face composed on the second core (fork `4677d2b`; steps and
-numbers in the plan's measurements table). **Next:** the user tries a real conversation on
+448 rows; ~9 fps steady; fork `e2ae49b`). **Performance (2026-11-16):** 31 fps idle (the 30 cap), 18 full face frames/s while speaking:
+composed on the second core into two buffers, sent straight from the face buffer, pipelined DMA
+(fork `57bedfc`; every step in the plan's measurements table). **Chat view** (fork `e5cf2ca`):
+drag to scroll with momentum, close by swiping down from the top strip, no hold-to-talk there.
+**Idle ladder** (V1 only, `idle_ladder`): Awake → Resting at `rest_after` 30 s (~8 fps, calmer
+glances) → Dozing at `doze_after` 120 s (asleep face, dim, ~4 fps; with the time when
+`doze_clock` is on) → Screen off at `off_after` 300 s (light sleep and sparse Wi-Fi, still
+connected). On USB: `rest_after_usb` 60, `doze_after_usb` 600, `off_after_usb` 1800. An exchange
+holds Awake; Hermes messages, touch, BOOT, PWR and a pick-up or shake (QMI8658 now on) wake her,
+and the waking input does nothing else; waking from Dozing or Off plays a wake-up. It replaces
+`screen_timeout` and `clock` on V1 (the settings menu's two rows now set `off_after` and
+`doze_clock`). Not yet flashed. **Next:** the user tries a real conversation on
 the board; then possibly real lip sync from the played audio and Hermes-triggered moods.
 Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
 Waveshare's V1 schematic), the `diag` label.

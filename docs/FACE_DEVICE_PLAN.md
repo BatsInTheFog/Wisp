@@ -168,7 +168,12 @@ from a dedicated partition, copied to PSRAM; lip sync stamped at play time.
 | Breakdown + text rows only (`e5ab93c`) | 14.9 | 6.1 + 2.9 | text changes had forced whole-band redraws (31 of 66) |
 | Mouth band from the drawings (`44de5b1`) | 14.9 | 6.5 + 4.4 | the band reached the eyes; mouth compose 32 → 17 ms |
 | Faster turned mouth, no flame in the band (`7eee4b8`) | 16.9 | 7.3 + 5.6 = 12.9 | mouth compose 4.9 ms |
-| 4. Compose on the second core (`4677d2b`) | **17.5** | **7.1 + 9.2 = 16.3** | worker compose 21 / 17 ms; showing a frame on the app task 26 / 38 ms |
+| 4. Compose on the second core (`4677d2b`) | 17.5 | 7.1 + 9.2 = 16.3 | worker compose 21 / 17 ms; showing a frame on the app task 26 / 38 ms |
+| Two face buffers (`dbc6671`) | 19.0 | 6.9 + 8.3 = 15.2 | compose and show slow each other down (21 → 39 ms, 26 → 42 ms): both stream through PSRAM |
+| Face rows sent straight from the face buffer (`f0cc4cf`) | 25.1 | 7.3 + 10.6 = 17.9 | the 7-8 ms copy gone (1.4 ms left for text and bar rows) |
+| Every speaking frame a full one | 24.0 | 13.1 + 0 | slow movements as smooth as the mouth; ~300 of 448 rows change each frame |
+| Two DMA staging buffers, 64-byte cache lines (`1e4b7aa`) | 20.2 | 16.5 + 0 | each step faster (compose 26, show 18 ms) but frames waited on the 10 ms app poll |
+| Wake the app when a frame is done, steady beat, worker above the network (`57bedfc`) | **31.1** | **18.0** full | idle at the 30 fps cap |
 
 Breakdown now (idle / speaking): compose 20.7 / 30.1 ms, copy into the display buffer
 (PSRAM → PSRAM) 7.0 ms, text 0.4-0.5 ms, send 12.7 ms. While speaking, a full frame takes
@@ -182,6 +187,11 @@ so compose (~21 ms) and show (~26 ms idle, ~38 ms speaking) still add up per fra
 so ~21 fps at best). The mouth lane is no longer starved (9.2 mouth frames/s). Possible next
 gains: a second face buffer so the next frame composes while the last one is shown (~330 KB
 PSRAM), and composing straight into the display buffer to drop the ~7 ms copy.
+
+Why speaking is slower (measured with diag's new per-task CPU list): not audio and not the
+memory bus. Playing the sound takes ~1% of the CPU; bringing it in over Wi-Fi does not: the
+WebSocket client ~11%, TCP/IP ~5%, Wi-Fi ~4%, preempting both the face worker (compose 29 → 40
+ms) and the app task (show 21 → 31 ms), which runs at the board's lowest priority.
 
 Flashing note: use the plain `pio run -e esp32s3-touch-amoled-18-v1 -t upload`; adding
 `-t nobuild` makes PlatformIO write the app at its default 0x10000 instead of this board's
