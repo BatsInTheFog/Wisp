@@ -370,11 +370,12 @@ Options considered, best first:
 
 ## Single next step
 
-**Voice recorder, Phase 1 built, not yet flashed** ([docs/RECORDER.md](docs/RECORDER.md)): a
+**Voice recorder, Phase 1 flashed 2026-11-17 (fork `eeeafb9`+)** ([docs/RECORDER.md](docs/RECORDER.md)): a
 triple BOOT press records 16 kHz mono WAV to `/recordings/` on the microSD card, with the
 full-screen timer, mic art, Pause and hold-to-Stop. 706 core tests pass; the board firmware
-builds (1826 KB). Next: the user approves flashing the firmware plus the new `wisp_face.bin`
-(mic art) and setting the timezone, then tests on the device. Phases 2 (crash safety) and 3
+builds (1827 KB). Flashed with the new `wisp_face.bin` (mic art); `timezone` set to Chicago on
+the board. Recordings of 6 s or less are deleted. Next: the user tests it and we tune the mic
+gain from `rec`'s `peak_db` while they talk across a table. Phases 2 (crash safety) and 3
 (Nextcloud upload; Cloudflare's 100 MB limit is open) follow.
 
 Earlier:

@@ -6,7 +6,7 @@ three phases; the user tests each on the device before the next.
 
 | Phase | What | State |
 |---|---|---|
-| 1 | Record to SD, the recording screen | Built, not yet flashed (fork branch `wisp`) |
+| 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
 | 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot), pause polish | Not started |
 | 3 | Upload queue to Nextcloud | Not started |
 
@@ -25,6 +25,9 @@ three phases; the user tests each on the device before the next.
     keeps recording.
   - After Stop: "Saving...", then "Saved" with the file name for 2 s, then the face. A tap or
     a key press on "Saved" goes back at once.
+  - **6 seconds or less is deleted** (recorded time, pauses left out; `kRecordMinKeepS`): the
+    screen says "Not kept" instead of "Saved". Pocket presses and demos never take card space
+    or reach the upload.
 - **While open:** BOOT and PWR only brighten the screen; hold-to-talk and taps don't talk
   (the mic is busy); the idle ladder never sleeps her; after 30 s untouched the screen dims,
   and the touch that brightens it does nothing else. At 5% battery (on battery) she stops and
@@ -70,6 +73,11 @@ three phases; the user tests each on the device before the next.
   address is a setting there, and the Phase 3 test tries both forms.
 
 ## Phase 1 tests on the device
+
+Checked 2026-11-17 over USB: `rec start` records to `wisp_20261117_175741.wav` (local time,
+so the timezone and clock are right), 0 samples dropped; a 3 s test was deleted on stop. A quiet
+room reads about −63 dBFS. Two ~6 s files from the user's first tries (on the firmware before
+the 6 s rule) are still on the card.
 
 1. Flash the firmware and the new `wisp_face.bin`, and set the timezone (`set timezone
    CST6CDT,M3.2.0,M11.1.0`).
