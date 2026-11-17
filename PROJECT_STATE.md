@@ -283,8 +283,9 @@ one-off auth key entered by `tools/set_tailnet.py` (hidden prompt; the key was n
 saved). `diag` at home: tailnet `connected` as `wisp`, a session with the Mac mini, path
 `direct`, phase online, Ready. The Mac needed no change: Hermes's gadget port already answers on
 its tailnet address. The board's `server` is now the Mac's tailnet address (`hermes_url_away`
-in the local config). She sees 6 peers, so the access rules don't yet limit her to the gadget
-port (see docs/TAILNET_SETUP.md, step 1). Still to check: away on a phone hotspot, moving
+in the local config). She sees all 6 peers, and that is **decided, on purpose** (2026-11-16): the
+access rules stay open, because recordings may go to Nextcloud or n8n (on another tailnet
+machine) rather than straight to Hermes; the upload destination is not decided yet. Still to check: away on a phone hotspot, moving
 between networks, restart, battery with the tailnet on.
 
 **When we get there, walk through (user does the admin-console steps):**

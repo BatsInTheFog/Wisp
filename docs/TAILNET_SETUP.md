@@ -10,6 +10,10 @@ already answers on its tailnet address, so **nothing changes on the Mac**.
 
 ## 1. Access rules (Tailscale admin console → Access controls)
 
+**Decided 2026-11-16: not applied.** Wisp may reach every machine on the tailnet, because
+recordings may upload to Nextcloud or n8n instead of Hermes. The rules below are kept for if
+that changes; only the `tag:wisp` owner line is needed to tag her.
+
 Merge these into your policy, with the Mac's tailnet address (`tailscale ip -4` on the Mac, or
 `hermes_url_away` in the local config) in place of `MAC_TAILNET_IP`:
 
