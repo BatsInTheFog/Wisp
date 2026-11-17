@@ -278,6 +278,15 @@ fallback.** The Mac is already on the tailnet (the laptop reaches Hermes that wa
 
 **Order:** V1 board working on home Wi-Fi with stock Gadget first, then turn on the tailnet.
 
+**Status (2026-11-16): Wisp is on the tailnet** (option A, fork `2832e03`). Joined with a
+one-off auth key entered by `tools/set_tailnet.py` (hidden prompt; the key was never shown or
+saved). `diag` at home: tailnet `connected` as `wisp`, a session with the Mac mini, path
+`direct`, phase online, Ready. The Mac needed no change: Hermes's gadget port already answers on
+its tailnet address. The board's `server` is now the Mac's tailnet address (`hermes_url_away`
+in the local config). She sees 6 peers, so the access rules don't yet limit her to the gadget
+port (see docs/TAILNET_SETUP.md, step 1). Still to check: away on a phone hotspot, moving
+between networks, restart, battery with the tailnet on.
+
 **When we get there, walk through (user does the admin-console steps):**
 1. Tailnet policy: add `tag:wisp` under `tagOwners`, and a grant letting only `tag:wisp`
    reach `tcp:8765` on the Mac's `100.x` address (nothing else on the tailnet).
