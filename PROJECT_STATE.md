@@ -345,8 +345,18 @@ Options considered, best first:
 - Gadget's 30 s limit (`kMaxUtteranceMs`) stays for normal turns; record mode doesn't change it.
 - What Gadget already gives us: a microSD mount (FAT32) used for its log mirror
   (`port_sdlog.*`, `SdConfig` in `board.hpp`), and Wi-Fi/offline handling.
-- To confirm: the V1 board's microSD pins (from Waveshare's V1 schematic), and that the
-  slot is wired to the S3 (not shared with something else).
+- **microSD works on V1 (2026-11-16, fork `1181241`):** SDMMC **1-bit**, CLK GPIO2, CMD GPIO1,
+  DAT0 GPIO3, with the card's DAT3/CS line held **high** by TCA9554 **EXIO7** (so it stays in SD
+  mode, not SPI). Source: Waveshare's original-board `pin_config.h` and SD sketch (which sets
+  EXIO7 high before `SD_MMC.begin(1-bit)`); the schematic's net labels (`SDCS`, `MISO`, `MOSI`,
+  `EXIO7` on the expander's P7) fit, though the wiring itself wasn't traced. GPIO1-3 are used by
+  nothing else. Card power: the always-on 3.3 V rail; no card-detect found.
+  - The 32 GB card: SDHC "SDU1", 30,145 MB, FAT32 with 32 KB clusters, empty apart from
+    `System Volume Information`. 20 MHz bus.
+  - `sd test 8`: write **1.82 MB/s**, read **2.02 MB/s**, every byte verified; the slowest 16 KB
+    write took 35.5 ms. Recording at 16 kHz mono 16-bit needs 32 KB/s: about 57x headroom.
+  - Console: `sd` (card info), `sd ls [dir]`, `sd test [MB]`. The mount at `/sdcard` is shared
+    with the log mirror (`sd_log`, off). 40 MHz (high speed) is untried.
 
 ## Single next step
 
@@ -372,10 +382,9 @@ connected). On USB: `rest_after_usb` 60, `doze_after_usb` 600, `off_after_usb` 1
 holds Awake; Hermes messages, touch, BOOT, PWR and a pick-up or shake (QMI8658 now on) wake her,
 and the waking input does nothing else; waking from Dozing or Off plays a wake-up. It replaces
 `screen_timeout` and `clock` on V1 (the settings menu's two rows now set `off_after` and
-`doze_clock`). Not yet flashed. **Next:** the user tries a real conversation on
+`doze_clock`). Flashed; Resting seen on schedule. **Next:** the user tries a real conversation on
 the board; then possibly real lip sync from the played audio and Hermes-triggered moods.
-Later: the tailnet, record mode, the microSD slot (V1 pins still to confirm from
-Waveshare's V1 schematic), the `diag` label.
+Later: the tailnet, record mode (the microSD card now mounts and tests fine), the `diag` label.
 
 Device settings made 2026-11-16 (in the board's flash, not in code): `screen_timeout` 210 s
 (dims at ~105 s, dark 60 s after the resting clock appears at 150 s), `clock` 150,
