@@ -42,10 +42,11 @@ expire, so no key-expiry step is needed.
 
 ## 3. Give it to Wisp (USB)
 
-With the board on USB:
+With the board on USB, in PowerShell (this PC has no plain `python` command; this is the
+Gadget checkout's Python, which has pyserial):
 
 ```text
-python tools/set_tailnet.py COM3
+& "$env:USERPROFILE\Documents\GitHub\hermes-gadget-sdk\.venv\Scripts\python.exe" "$env:USERPROFILE\Documents\GitHub\Wisp\tools\set_tailnet.py" COM3
 ```
 
 It asks for the key at a hidden prompt and sends it to the board with the Mac's tailnet
