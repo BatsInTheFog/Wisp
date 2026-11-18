@@ -7,7 +7,7 @@ three phases; the user tests each on the device before the next.
 | Phase | What | State |
 |---|---|---|
 | 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
-| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Flashed 2026-11-18; power-cut test by the user still to do |
+| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Done 2026-11-18; the user tested it on the device |
 | 3 | Upload queue to Nextcloud | Not started |
 
 ## How it behaves (Phase 1)
@@ -71,7 +71,7 @@ three phases; the user tests each on the device before the next.
 - **Console** (USB): `rec` shows state, seconds, the level now and its peak (`db`,
   `peak_db`: for tuning the gain), `dropped`, `ring_peak_pct`, the file and `boot_check`. Also
   `rec start`, `rec pause`, `rec resume`, `rec stop` (asks Save or Delete), `rec save`,
-  `rec delete`, `rec level reset`.
+  `rec delete`, `rec level reset`. `sd rm <file>` deletes one file on the card.
 
 ## Decisions
 
@@ -111,3 +111,8 @@ files ("0 recovered, 2 short deleted"). An 11 s recording showed as `.wav.part` 
 `rec save` became `wisp_20261118_023844.wav` (364,812 bytes, 11.4 s). An 8 s one deleted with
 `rec delete` left nothing. 0 samples dropped. Still to do on the device: the power-cut test, and
 tuning the gain while the user talks.
+
+2026-11-18: the user ran the device tests, including the power cut (held PWR 6 s while
+recording): at the restart the check reported "1 recovered", a 61 s file. At the user's request
+all recordings on the card were then deleted with `sd rm` (none were to be sent); the folder is
+empty. Gain tuning is still to do.
