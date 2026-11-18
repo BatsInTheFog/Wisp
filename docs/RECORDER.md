@@ -79,6 +79,19 @@ three phases; the user tests each on the device before the next.
   the public address. That address goes through Cloudflare, which refuses uploads over 100 MB
   (~52 min of audio). Checked 2026-11-18 from the PC: a 120 MB test file went through the
   tailnet in 14 s (`TEST_wisp_upload_120MB.mp3`, HTTP 201).
+- **Uploads go through the Mac** (changed 2026-11-18, after the first away test). From a
+  network away from home, the NAS never answered Wisp's tunnel requests (no reply through the relay or directly;
+  at home it worked because the two meet on the LAN). Wisp keeps a live tunnel to the Mac for
+  Hermes from anywhere, so the Mac forwards Nextcloud for her:
+  `tailscale serve --bg --tcp 9001 tcp://<home LAN address>:9001` (run once on the Mac; it stays on
+  across restarts; `tailscale serve --tcp=9001 off` undoes it). The upload address is the
+  Mac's tailnet number on port 9001; the bytes pass through untouched, so the NAS's
+  certificate (and Wisp's pin on it) is the same, and Nextcloud accepts that address. Uploads
+  now need the Mac on, as Hermes does.
+- **TLS memory:** the first upload through the Mac broke mid-file with "esp-aes: Failed to
+  allocate memory": with TLS buffers in PSRAM, the AES accelerator allocates an internal DMA
+  buffer for every record, and internal RAM had dipped to 8.6 KB free (PSRAM: ~580 KB of 8 MB
+  free). V1 now uses software AES, and the upload's read buffer is in PSRAM.
 - **The board needs the NAS's tailnet number** (100.x), not its `.ts.net` name: those names
   only resolve through Tailscale's own DNS, which TailTiny doesn't give lwIP. And before each
   upload Wisp brings up the WireGuard session with the NAS (`TailnetLink::wake_peer`, the

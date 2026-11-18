@@ -17,10 +17,10 @@
   "device_name": "Wisp",
   "serial_port": "COM?",
   "nextcloud": {
-    "_comment": "File drop share for recordings, reached over the tailnet (no Cloudflare). tools/set_upload.py sends it to the board.",
+    "_comment": "Uploads go to the Mac on the tailnet, which forwards port 9001 to Nextcloud on the NAS (tailscale serve --bg --tcp 9001 tcp://<NAS LAN IP>:9001). tools/set_upload.py sends it to the board.",
     "host": "cloud.example.com",
     "share_token": "<text after /s/ in the share link>",
     "share_password": "",
-    "upload_base": "https://<NAS tailnet IP 100.x.y.z>:9001/public.php/dav/files/"
+    "upload_base": "https://<Mac tailnet IP 100.x.y.z>:9001/public.php/dav/files/"
   }
 }
