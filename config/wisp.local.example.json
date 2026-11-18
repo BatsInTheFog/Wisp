@@ -21,6 +21,6 @@
     "host": "cloud.example.com",
     "share_token": "<text after /s/ in the share link>",
     "share_password": "",
-    "upload_base": "https://<nas>.<tailnet>.ts.net:9001/public.php/dav/files/"
+    "upload_base": "https://<NAS tailnet IP 100.x.y.z>:9001/public.php/dav/files/"
   }
 }
