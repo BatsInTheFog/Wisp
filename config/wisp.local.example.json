@@ -17,10 +17,10 @@
   "device_name": "Wisp",
   "serial_port": "COM?",
   "nextcloud": {
-    "_comment": "File drop share for recordings. Basic auth: user = share_token, password = share_password.",
+    "_comment": "File drop share for recordings, reached over the tailnet (no Cloudflare). tools/set_upload.py sends it to the board.",
     "host": "cloud.example.com",
     "share_token": "<text after /s/ in the share link>",
     "share_password": "",
-    "upload_url": "https://cloud.example.com/public.php/webdav/"
+    "upload_base": "https://<nas>.<tailnet>.ts.net:9001/public.php/dav/files/"
   }
 }

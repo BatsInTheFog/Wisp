@@ -8,7 +8,7 @@ three phases; the user tests each on the device before the next.
 |---|---|---|
 | 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
 | 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Done 2026-11-18; the user tested it on the device |
-| 3 | Upload queue to Nextcloud | Not started |
+| 3 | Upload queue to Nextcloud, over the tailnet | Built 2026-11-18, not yet flashed |
 
 ## How it behaves (Phase 1)
 
@@ -73,21 +73,46 @@ three phases; the user tests each on the device before the next.
   `rec start`, `rec pause`, `rec resume`, `rec stop` (asks Save or Delete), `rec save`,
   `rec delete`, `rec level reset`. `sd rm <file>` deletes one file on the card.
 
+## Uploads (Phase 3)
+
+- **Route: over the tailnet, straight to Nextcloud on the TrueNAS** (port 9001), not through
+  the public address. That address goes through Cloudflare, which refuses uploads over 100 MB
+  (~52 min of audio). Checked 2026-11-18 from the PC: a 120 MB test file went through the
+  tailnet in 14 s (`TEST_wisp_upload_120MB.mp3`, HTTP 201).
+- **Address:** Nextcloud 35's public WebDAV, `https://<nas>:9001/public.php/dav/files/<share
+  token>/<file>`. The old `public.php/webdav/` answers 409 for File drop shares. A share
+  without a password needs no login (with one: basic auth, user `anonymous`; untested).
+- **Certificate:** Nextcloud on TrueNAS uses TrueNAS's self-signed certificate ("localhost",
+  valid to Oct 2027). Wisp trusts exactly that certificate and no other (its name isn't
+  checked). If TrueNAS renews it, run `tools/set_upload.py` again.
+- **Setup over USB:** `tools/set_upload.py COM3` reads `nextcloud` from the ignored local config
+  (`share_token`, `share_password`, `upload_base`), fetches the certificate over the tailnet and
+  shows its fingerprint, and sends `set upload_url ...`, `upload cert ...` to the board. The
+  token and password are never printed; `get upload_url` on the board says `<set>`.
+- **When:** only while Wi-Fi is up and nothing is recording (from triple-press to "Saved"). A
+  recording that starts mid-upload stops the upload at once; it starts over later. Oldest
+  first, streamed from the card in 8 KB pieces.
+- **On screen:** after "Saved" (2 s): "Uploading..." with its percent, then "Sent" (2 s), then the
+  face. Offline: "Saved / Will upload when online". A failure: "Will upload later". A long one
+  (over 30 s) carries on behind the face. A tap goes back to the face at once. On the face, the
+  caption line says "2 recordings waiting" or "Uploading recording 40%".
+- **Retries:** 30 s, then doubling, at most 30 min; a new Wi-Fi connection tries at once.
+- **After sending:** the file moves to `/recordings/sent/`. Sent files are deleted 14 days after
+  they were recorded, or the oldest first when the card has under 2 GB free. A recording that
+  hasn't been sent is never deleted.
+- **Console:** `upload` (configured, waiting, uploading, percent, sent, failures, last_error,
+  retry_in_s), `upload now`, `upload cert begin | add <line> | end | clear`.
+
 ## Decisions
 
 - **SD stays in SD mode (SDMMC 1-bit), not SPI** (2026-11-17, the user agreed). Same pins;
   already tested at 1.82 MB/s writing, 57× what recording needs.
-- **Upload over Cloudflare has a 100 MB limit.** The Nextcloud server is behind Cloudflare
-  (Nextcloud 35.0.3), which rejects request bodies over 100 MB on its standard plans: about
-  52 minutes of audio in one PUT. The user is fine with uploading straight into Nextcloud
-  instead. Decide in Phase 3, after a 60 MB and a 120 MB test upload from the PC. The options:
-  - upload over the tailnet to Nextcloud directly, skipping Cloudflare (if Nextcloud is on
-    the tailnet);
-  - split long recordings into parts;
-  - raise the limit, if the Cloudflare plan allows.
+- **Uploads go over the tailnet, not the public address** (decided 2026-11-18). The public
+  address goes through Cloudflare, which refuses uploads over 100 MB (~52 min of audio); the
+  tailnet route to the TrueNAS has no such limit (a 120 MB test went through). Details under
+  Uploads.
 - The share token and password live only in `config/wisp.local.json` (git-ignored), under
-  `nextcloud`. Nextcloud 35 may not keep the old `public.php/webdav/` address; the upload
-  address is a setting there, and the Phase 3 test tries both forms.
+  `nextcloud`, and on the board.
 
 ## Phase 1 tests on the device
 
