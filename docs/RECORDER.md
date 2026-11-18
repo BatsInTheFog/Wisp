@@ -8,7 +8,7 @@ three phases; the user tests each on the device before the next.
 |---|---|---|
 | 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
 | 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Done 2026-11-18; the user tested it on the device |
-| 3 | Upload queue to Nextcloud, over the tailnet | Flashed 2026-11-18; first upload sent |
+| 3 | Upload queue to Nextcloud, over the tailnet | Done 2026-11-18; works end to end with n8n |
 
 ## How it behaves (Phase 1)
 
@@ -150,4 +150,8 @@ empty. Gain tuning is still to do.
 2026-11-18, Phase 3 on the device: `tools/set_upload.py` set the address and the certificate
 (SHA-256 `2d:e9:5d:9f:…`). The first upload, the user's 59 s `wisp_20261118_032939.wav`, went
 over the tailnet at **218 KB/s** (HTTP 201) and moved to `sent/`. At that speed an hour (115 MB)
-takes about 9 minutes; it runs in the background. Still to check: the n8n workflow picks it up.
+takes about 9 minutes; it runs in the background. The n8n workflow picked it up within 5 min:
+transcribed, summarised, filed under `Codex/Wisp/Recordings/2026/2026-11/` and announced on
+Telegram. It was filed as a general note, because the workflow needs the
+recording to open with a spoken name cue.
+The user confirmed the whole chain works.
