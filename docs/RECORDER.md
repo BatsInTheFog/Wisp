@@ -8,7 +8,7 @@ three phases; the user tests each on the device before the next.
 |---|---|---|
 | 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
 | 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Done 2026-11-18; the user tested it on the device |
-| 3 | Upload queue to Nextcloud, over the tailnet | Built 2026-11-18, not yet flashed |
+| 3 | Upload queue to Nextcloud, over the tailnet | Flashed 2026-11-18; first upload sent |
 
 ## How it behaves (Phase 1)
 
@@ -79,6 +79,11 @@ three phases; the user tests each on the device before the next.
   the public address. That address goes through Cloudflare, which refuses uploads over 100 MB
   (~52 min of audio). Checked 2026-11-18 from the PC: a 120 MB test file went through the
   tailnet in 14 s (`TEST_wisp_upload_120MB.mp3`, HTTP 201).
+- **The board needs the NAS's tailnet number** (100.x), not its `.ts.net` name: those names
+  only resolve through Tailscale's own DNS, which TailTiny doesn't give lwIP. And before each
+  upload Wisp brings up the WireGuard session with the NAS (`TailnetLink::wake_peer`, the
+  handshake TailTiny's own sockets do): lwIP sockets can't reach a tailnet peer without one,
+  and only Hermes's is kept up. It took ~10 s the first time.
 - **Address:** Nextcloud 35's public WebDAV, `https://<nas>:9001/public.php/dav/files/<share
   token>/<file>`. The old `public.php/webdav/` answers 409 for File drop shares. A share
   without a password needs no login (with one: basic auth, user `anonymous`; untested).
@@ -141,3 +146,8 @@ tuning the gain while the user talks.
 recording): at the restart the check reported "1 recovered", a 61 s file. At the user's request
 all recordings on the card were then deleted with `sd rm` (none were to be sent); the folder is
 empty. Gain tuning is still to do.
+
+2026-11-18, Phase 3 on the device: `tools/set_upload.py` set the address and the certificate
+(SHA-256 `2d:e9:5d:9f:…`). The first upload, the user's 59 s `wisp_20261118_032939.wav`, went
+over the tailnet at **218 KB/s** (HTTP 201) and moved to `sent/`. At that speed an hour (115 MB)
+takes about 9 minutes; it runs in the background. Still to check: the n8n workflow picks it up.
