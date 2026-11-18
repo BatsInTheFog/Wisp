@@ -168,3 +168,8 @@ transcribed, summarised, filed under `Codex/Wisp/Recordings/2026/2026-11/` and a
 Telegram. It was filed as a general note, because the workflow needs the
 recording to open with a spoken name cue.
 The user confirmed the whole chain works.
+
+2026-11-18, away from home: after the Mac route and software AES, the waiting recording
+(`wisp_20261118_144325.wav`) went through the Mac at **61 KB/s** (HTTP 201), and n8n picked it
+up. At that speed an hour takes ~30 min in the background. Internal RAM still dipped to 3.8 KB
+free during the upload, and PSRAM has ~577 KB free: worth a memory pass.
