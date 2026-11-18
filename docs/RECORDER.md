@@ -7,7 +7,7 @@ three phases; the user tests each on the device before the next.
 | Phase | What | State |
 |---|---|---|
 | 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
-| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Built, not yet flashed |
+| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Flashed 2026-11-18; power-cut test by the user still to do |
 | 3 | Upload queue to Nextcloud | Not started |
 
 ## How it behaves (Phase 1)
@@ -104,3 +104,10 @@ the 6 s rule) are still on the card.
 4. Pause and resume; hold Stop; check the file with `sd ls /sdcard/recordings`.
 5. Record 5+ minutes; `dropped` must be 0.
 6. Copy the WAV off the card and play it.
+
+Checked 2026-11-18 over USB after flashing Phase 2: the start-up check deleted the two old short
+files ("0 recovered, 2 short deleted"). An 11 s recording showed as `.wav.part` at 319,532 bytes
+(the 10 s checkpoint: 9.98 s of audio already in its size), asked Save or Delete, and after
+`rec save` became `wisp_20261118_023844.wav` (364,812 bytes, 11.4 s). An 8 s one deleted with
+`rec delete` left nothing. 0 samples dropped. Still to do on the device: the power-cut test, and
+tuning the gain while the user talks.
