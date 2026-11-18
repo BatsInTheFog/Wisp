@@ -7,7 +7,7 @@ three phases; the user tests each on the device before the next.
 | Phase | What | State |
 |---|---|---|
 | 1 | Record to SD, the recording screen | Flashed 2026-11-17; the user is testing it |
-| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot), pause polish | Not started |
+| 2 | Crash safety (`.wav.part`, header every 10 s, repair on boot); Save or Delete after Stop | Built, not yet flashed |
 | 3 | Upload queue to Nextcloud | Not started |
 
 ## How it behaves (Phase 1)
@@ -23,15 +23,31 @@ three phases; the user tests each on the device before the next.
     Resume continues the same file. The timer counts recorded time only.
   - **Stop:** hold for one second while a red ring fills. Letting go early, or sliding off,
     keeps recording.
-  - After Stop: "Saving...", then "Saved" with the file name for 2 s, then the face. A tap or
-    a key press on "Saved" goes back at once.
+  - **After Stop: Save or Delete** (added 2026-11-18, the user's design). SAVE fills the top
+    half in Wisp's teal in the clock's large font; a tap saves. DELETE is a smaller red button
+    below it and needs a one-second hold (it fills from the left), so a brushed screen never
+    throws away a long note. The recorded length shows above SAVE. No choice in 60 s: it is
+    saved (the countdown shows under SAVE). The keys don't choose. While the choice is up the
+    file stays open and paused, so a crash still keeps it.
+  - Then "Saving...", then "Saved" with the file name for 2 s (or "Deleted"), then the face. A
+    tap or a key press on that message goes back at once.
   - **6 seconds or less is deleted** (recorded time, pauses left out; `kRecordMinKeepS`): the
-    screen says "Not kept" instead of "Saved". Pocket presses and demos never take card space
-    or reach the upload.
+    screen says "Not kept" without asking Save or Delete. Pocket presses and demos never take
+    card space or reach the upload.
 - **While open:** BOOT and PWR only brighten the screen; hold-to-talk and taps don't talk
   (the mic is busy); the idle ladder never sleeps her; after 30 s untouched the screen dims,
   and the touch that brightens it does nothing else. At 5% battery (on battery) she stops and
-  saves on her own.
+  saves on her own, without asking.
+
+## Crash safety (Phase 2)
+
+- While recording, the file is `wisp_….wav.part`. Every 10 s its WAV header is rewritten with
+  the length so far and the card synced, so a dead battery or a pulled card loses at most the
+  last ~10 s. When finished it is renamed to `wisp_….wav`.
+- At every start-up, before a recording can start, Wisp checks `/recordings`: a leftover
+  `.part` gets its header fixed and becomes `.wav` (with `_recovered` added if the name is
+  taken), and any recording of 6 s or less is deleted (crash leftovers, and files from before
+  the 6 s rule). `rec` reports it as `boot_check`.
 - **Mic level → art:** RMS of each 50 ms block in dBFS, −50 dB → frame 1 and −15 dB → frame 5
   (`RecLevel::kQuietDb`, `kLoudDb` in the fork's `core/include/hg/recorder.hpp`). Rises at
   once, falls over ~300 ms (`kReleaseMs`).
@@ -53,8 +69,9 @@ three phases; the user tests each on the device before the next.
   `assets/parts/`, and `tools/pack_face.py` adds them under the manifest's `recorder` key.
   The file grew from 2.34 MB to 2.59 MB (the assets partition holds 3.9 MB).
 - **Console** (USB): `rec` shows state, seconds, the level now and its peak (`db`,
-  `peak_db`: for tuning the gain), `dropped`, `ring_peak_pct` and the file. Also
-  `rec start`, `rec pause`, `rec resume`, `rec stop`, `rec level reset`.
+  `peak_db`: for tuning the gain), `dropped`, `ring_peak_pct`, the file and `boot_check`. Also
+  `rec start`, `rec pause`, `rec resume`, `rec stop` (asks Save or Delete), `rec save`,
+  `rec delete`, `rec level reset`.
 
 ## Decisions
 

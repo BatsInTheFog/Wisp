@@ -375,7 +375,10 @@ triple BOOT press records 16 kHz mono WAV to `/recordings/` on the microSD card,
 full-screen timer, mic art, Pause and hold-to-Stop. 706 core tests pass; the board firmware
 builds (1827 KB). Flashed with the new `wisp_face.bin` (mic art); `timezone` set to Chicago on
 the board. Recordings of 6 s or less are deleted. Next: the user tests it and we tune the mic
-gain from `rec`'s `peak_db` while they talk across a table. Phases 2 (crash safety) and 3
+gain from `rec`'s `peak_db` while they talk across a table. **Phase 2 built (2026-11-18), not yet flashed:**
+`.wav.part` with 10 s checkpoints, start-up repair and short-file cleanup, and a Save or Delete
+choice after Stop (SAVE large in teal, a tap; DELETE smaller in red, a one-second hold; saved by
+itself after 60 s). Phases 2 (crash safety) and 3
 (Nextcloud upload; Cloudflare's 100 MB limit is open) follow.
 
 Earlier:
