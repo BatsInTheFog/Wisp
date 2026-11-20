@@ -66,6 +66,23 @@ then *Reaching Hermes over the tailnet*, then she's back.
 5. **Memory and battery:** free internal RAM in `diag`; the idle ladder's screen-off doze still
    happens.
 
+## 5. Keep Wisp on the same relay as everything else (`ts_derp`)
+
+Wisp's tailnet code (TailTiny) reaches other machines only through its *own* relay region; the
+full Tailscale app also uses the other machine's region. Wisp picks the fastest region at each
+start, and on that network's weak Wi-Fi (2026-11-20) that was Toronto, while the Mac and the NAS
+use Chicago: the relay answered "PeerGone", and she could reach neither Hermes nor Nextcloud.
+
+So Wisp's region is pinned to Chicago (Tailscale region 12, `ord`), where the Mac, the NAS and
+the laptop all are:
+
+```text
+set ts_derp 12
+```
+
+(Over USB; she restarts to apply it. `set ts_derp 0` goes back to the fastest.) If the other
+machines ever move region (`tailscale status --json` shows each one's "Relay"), change it to match.
+
 ## Undo
 
 `set tailnet off` (the board restarts and connects straight to `server`; set it back to the home
