@@ -173,3 +173,12 @@ The user confirmed the whole chain works.
 (`wisp_20261118_144325.wav`) went through the Mac at **61 KB/s** (HTTP 201), and n8n picked it
 up. At that speed an hour takes ~30 min in the background. Internal RAM still dipped to 3.8 KB
 free during the upload, and PSRAM has ~577 KB free: worth a memory pass.
+
+2026-11-20, away from home: Wisp couldn't reach Hermes. Her tailnet code had picked the Toronto
+relay (that network's Wi-Fi is weak, -85 dBm) while the Mac and the NAS use Chicago, and TailTiny
+reaches peers only through its own relay: "PeerGone", no session. Fixed with `ts_derp 12`
+(docs/TAILNET_SETUP.md section 5): online and paired 7 s after the restart, with a direct path
+to the Mac. Also flashed: the recorder ring 1 MB -> 256 KB (PSRAM free 577 KB -> 1.37 MB), its
+8 KB internal write buffer only while recording, and the SD log on (`sd_log on`) with two 32 MB
+files. Memory during an upload is still to measure: `diag`'s `internal_min_free` after the next
+real recording uploads.
