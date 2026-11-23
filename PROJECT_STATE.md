@@ -252,6 +252,13 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   pairing keys and any Tailscale key) in the device's flash storage (NVS), set over USB
   (`set server ...`, `hermes-gadget provision`) or the phone setup page.
 
+- **History rewritten for a public repo (2026-11-23).** Every past version had personal details
+  (the build PC's user name, the board's MAC, home network addresses, the Mac's names, workplace
+  wording) replaced, and every commit's email set to the GitHub noreply address, with
+  git-filter-repo. Today's files were checked identical before and after (same tree). A full
+  backup of the old history is in `$env:USERPROFILE\Documents\Wisp-backups\` (a git bundle,
+  outside the repo). Commits from this checkout use the noreply email.
+
 ## Two repositories, and where secrets live
 
 - **Fork:** `BatsInTheFog/hermes-gadget-sdk` (created 2026-11-16), a copy of Adolanium's Hermes Gadget
