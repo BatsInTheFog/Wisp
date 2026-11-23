@@ -92,7 +92,7 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   replies (Mac text-to-speech → PC speakers) all work.
   - To talk: **click and hold on the simulated screen**. Holding Space didn't seem to work in
     our test, probably because keyboard focus was in the text box.
-  - Simulator identity and saved replies: `$env:USERPROFILE\.hermes-gadget\sim\wisp-sim\`.
+  - Simulator identity and saved replies: `%USERPROFILE%\.hermes-gadget\sim\wisp-sim\`.
 
 ## Known problems / open questions
 
@@ -148,12 +148,12 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
     address); turned it off for the V1 board (fork `71a00d6`, full rebuild 12 min) and
     flashed (fingerprint `e916b210cf337c2f`). **Didn't help:** associated to a strong node
     (channel 6, -50) and still **no address after 2+ minutes**; the log shows only Gadget's
-    20 s retry (`sta is connected`). This PC (<home LAN address>, same network) sees no trace of
-    the board; its earlier address <home LAN address> doesn't answer. Fresh discovery is kept
+    20 s retry (`sta is connected`). This PC (same network) sees no trace of
+    the board; its earlier address doesn't answer. Fresh discovery is kept
     (harmless, and fine with Tailscale: the tailnet address is separate).
   - **Root cause still unknown.** It got an address once (slowly) on the original
     firmware. Next checks, on the router side: does the router app list the board
-    (, maybe as "espressif"), is it paused/blocked, can it get a
+    (maybe as "espressif"), is it paused/blocked, can it get a
     reservation; restart the router/mesh points (many failed and repeated joins may have
     made it throttle the board). On the board side if needed: DHCP debug logging.
   - Router app (Google Home) lists the board as **idle, not offline**: associated, no
@@ -236,7 +236,7 @@ $env:PATH = "$PWD\.venv\Scripts;$env:PATH"      # so build-sim finds cmake
   Built: app 1648 KB in a 6144 KB slot, **73% free**; Gadget checks pass (172). **USB-flashed
   2026-11-16** (all four parts hash-verified): online 22 s after boot, **still paired**,
   name/server/Wi-Fi kept, `diag` `ota.slot_size` 6291456, firmware `58155120ebda806e`,
-  address <home LAN address> on a strong point (-50). Later firmware can go over USB or over
+  an address on a strong point (-50). Later firmware can go over USB or over
   the air (the layout stays).
 - Gadget plugin installed from `main` on the Mac's Hermes; the PC simulator is at `2ef17f6`.
   Keep the two in step when updating (plugin and firmware/simulator share the protocol).

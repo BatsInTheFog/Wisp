@@ -83,7 +83,7 @@ three phases; the user tests each on the device before the next.
   network away from home, the NAS never answered Wisp's tunnel requests (no reply through the relay or directly;
   at home it worked because the two meet on the LAN). Wisp keeps a live tunnel to the Mac for
   Hermes from anywhere, so the Mac forwards Nextcloud for her:
-  `tailscale serve --bg --tcp 9001 tcp://<home LAN address>:9001` (run once on the Mac; it stays on
+  `tailscale serve --bg --tcp 9001 tcp://<NAS LAN address>:9001` (run once on the Mac; it stays on
   across restarts; `tailscale serve --tcp=9001 off` undoes it). The upload address is the
   Mac's tailnet number on port 9001; the bytes pass through untouched, so the NAS's
   certificate (and Wisp's pin on it) is the same, and Nextcloud accepts that address. Uploads

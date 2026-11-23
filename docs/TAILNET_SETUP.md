@@ -5,7 +5,7 @@ the Mac at its tailnet address, from home Wi-Fi, a work network or a phone hotsp
 Nothing on the Mac is published to the internet. The Mac's address and the auth key live only in
 `config/wisp.local.json` (git-ignored) and on the board, never in this repo.
 
-Checked 2026-11-16: the Mac (`the-mac`) is on the tailnet, and Hermes's gadget port
+Checked 2026-11-16: the Mac is on the tailnet, and Hermes's gadget port
 already answers on its tailnet address, so **nothing changes on the Mac**.
 
 ## 1. Access rules (Tailscale admin console → Access controls)
