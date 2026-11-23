@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="#the-build">The build</a> ·
   <a href="#what-she-does">What she does</a> ·
   <a href="#the-recorder">The recorder</a> ·
   <a href="#how-it-fits-together">How it fits together</a> ·
@@ -32,6 +33,15 @@ The firmware is a fork of [Hermes Gadget](https://github.com/Adolanium/hermes-ga
 and an uploader added: [BatsInTheFog/hermes-gadget-sdk](https://github.com/BatsInTheFog/hermes-gadget-sdk),
 branch `wisp`. **This repository holds Wisp herself**: her art, the animation spec, the tools
 that pack the art for the device, and the design notes.
+
+## The build
+
+<p align="center">
+  <img src="assets/readme/build_face.jpg" height="380" alt="The Wisp device on its charging cable: a small black square with a curved AMOLED screen showing Wisp's glowing face and the words Hi, I'm Wisp">
+  &nbsp;
+  <img src="assets/readme/build_back.jpg" height="380" alt="The back of the Waveshare ESP32-S3-Touch-AMOLED-1.8 board, its label listing the AMOLED, PMIC, IMU, RTC, codec, SD slot, mic and speaker">
+</p>
+<p align="center"><sub>Wisp on her board, and the board's back: everything she uses is on it, no extra wiring.</sub></p>
 
 ## What she does
 

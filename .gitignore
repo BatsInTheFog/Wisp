@@ -61,3 +61,7 @@ wifi_credentials*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Original phone photos dropped in for the README (they carry location data): only the
+# cleaned, cropped copies (build_*.jpg) are committed.
+assets/readme/[0-9]*_[0-9]*.jpg
