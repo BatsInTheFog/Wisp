@@ -70,7 +70,7 @@ then *Reaching Hermes over the tailnet*, then she's back.
 
 Wisp's tailnet code (TailTiny) reaches other machines only through its *own* relay region; the
 full Tailscale app also uses the other machine's region. Wisp picks the fastest region at each
-start, and on that network's weak Wi-Fi (2026-11-20) that was Toronto, while the Mac and the NAS
+start, and on a weak Wi-Fi network away from home (2026-11-20) that was Toronto, while the Mac and the NAS
 use Chicago: the relay answered "PeerGone", and she could reach neither Hermes nor Nextcloud.
 
 So Wisp's region is pinned to Chicago (Tailscale region 12, `ord`), where the Mac, the NAS and

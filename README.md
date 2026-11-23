@@ -25,7 +25,7 @@
 Wisp runs on a **Waveshare ESP32-S3-Touch-AMOLED-1.8** board. Hold a button, talk, and Hermes
 answers through her speaker while her face reacts: she listens, thinks, looks things up, takes
 notes and talks back with a moving mouth. Triple-press the same button and she becomes a voice
-recorder for long conversations, which she uploads on her own. A home workflow then transcribes,
+recorder for longer spoken notes, which she uploads on her own. A home workflow then transcribes,
 summarises and files each recording.
 
 The firmware is a fork of [Hermes Gadget](https://github.com/Adolanium/hermes-gadget-sdk)
@@ -79,7 +79,7 @@ that pack the art for the device, and the design notes.
 For notes too long for a voice turn (your own spoken notes, from a few minutes to an hour):
 
 - **Triple-press BOOT** and she starts recording at once, with no added delay on single presses.
-- **A screen you can read across a table:** a red REC dot and a timer, and the mic art glowing
+- **A screen you can read at a glance:** a red REC dot and a timer, and the mic art glowing
   with the level (5 frames, quiet to loud, rising fast and falling slowly so it breathes with
   speech instead of flickering). **Pause** is a tap. **Stop** is a one-second hold with a ring
   that fills, so a brushed screen can't end a recording.
@@ -173,7 +173,7 @@ Next up:
 - **A status screen on the device:** Wi-Fi, tailnet, Hermes link, battery and waiting uploads,
   with Retry and Reconnect buttons.
 - **Face down to sleep and mute**, using the motion sensor.
-- **Note type at SAVE** (client, note or idea), so the workflow files it without spoken cues.
+- **Note type at SAVE** (for example note, idea or to-do), so the workflow files it without spoken cues.
 - **"Filed" confirmation on Wisp** when the workflow is done.
 - **Follow-up listening:** a few seconds of listening after a reply that ends in a question.
 

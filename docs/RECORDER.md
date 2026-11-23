@@ -1,6 +1,6 @@
 # Voice recorder
 
-Wisp records long sessions (longer spoken notes, a few minutes to an hour) to the microSD card and uploads them to a
+Wisp records longer spoken notes (a few minutes up to an hour) to the microSD card and uploads them to a
 Nextcloud File drop share, where an n8n workflow transcribes, summarises and files them. Built in
 three phases; the user tests each on the device before the next.
 
@@ -142,7 +142,7 @@ the 6 s rule) are still on the card.
 1. Flash the firmware and the new `wisp_face.bin`, and set the timezone (`set timezone
    CST6CDT,M3.2.0,M11.1.0`).
 2. Triple-press BOOT: the recorder opens and the timer runs.
-3. Talk across a table; check `rec`: `peak_db` around −25 to −20 dB is mid-scale. Tune the
+3. Talk at your normal distance from her; check `rec`: `peak_db` around −25 to −20 dB is mid-scale. Tune the
    gain if not.
 4. Pause and resume; hold Stop; check the file with `sd ls /sdcard/recordings`.
 5. Record 5+ minutes; `dropped` must be 0.
@@ -165,8 +165,8 @@ empty. Gain tuning is still to do.
 over the tailnet at **218 KB/s** (HTTP 201) and moved to `sent/`. At that speed an hour (115 MB)
 takes about 9 minutes; it runs in the background. The n8n workflow picked it up within 5 min:
 transcribed, summarised, filed under `Codex/Wisp/Recordings/2026/2026-11/` and announced on
-Telegram. It was filed as a general note, because the workflow needs the
-recording to open with a spoken name cue.
+Telegram. It was filed as a general note: the workflow sends a recording to a named person's folder only
+when it opens with a spoken name cue.
 The user confirmed the whole chain works.
 
 2026-11-18, away from home: after the Mac route and software AES, the waiting recording
