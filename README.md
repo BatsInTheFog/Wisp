@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/readme/wisp.png" width="280" alt="Wisp, a glowing forest spirit: teal flame, green eyes, small fangs">
+  <img src="assets/readme/wisp.png" width="280" alt="Wisp, a little glowing companion: teal flame, green eyes, small fangs">
 </p>
 
 <h1 align="center">Wisp</h1>
 
 <p align="center">
-  <b>A glowing forest spirit who lives in a pocket-sized AMOLED device.</b><br>
+  <b>A little glowing companion who lives in a pocket-sized AMOLED device.</b><br>
   She's a voice companion for a self-hosted <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a>,
   and a voice recorder that files your notes for you.
 </p>
